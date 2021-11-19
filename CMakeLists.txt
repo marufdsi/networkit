@@ -54,8 +54,8 @@ endif()
 
 ################################################################################
 # Compilation Flags
-set(NETWORKIT_CXX_FLAGS "-simd")
-set(NETWORKIT_LINK_FLAGS "")
+set(NETWORKIT_CXX_FLAGS "-simd -xCORE-AVX512")
+set(NETWORKIT_LINK_FLAGS "-simd -xCORE-AVX512")
 
 if (NETWORKIT_QUIET_LOGGING)
 	set(NETWORKIT_CXX_FLAGS "-DNETWORKIT_QUIET_LOGGING")
