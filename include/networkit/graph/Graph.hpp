@@ -132,7 +132,7 @@ class Graph final {
     //!< only used for directed graphs, same schema as inEdges
     std::vector<std::vector<edgeweight>> inEdgeWeights;
     //!< same schema (and same order!) as outEdges
-    std::vector<std::vector<edgeweight>> outEdgeWeights;
+    std::vector<std::vector<f_weight>> outEdgeWeights;
 
     //!< only used for directed graphs, same schema as inEdges
     std::vector<std::vector<edgeid>> inEdgeIds;
