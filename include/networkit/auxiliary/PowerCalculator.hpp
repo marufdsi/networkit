@@ -800,7 +800,7 @@ static void rapl_sysfs_results(std::string version, std::string graph_name, int 
     std::ofstream power_log;
 
     std::string folderName = "EUPAR_Results/PowerLog/";
-    mkdir(folderName.c_str(), 0777)
+    mkdir(folderName.c_str(), 0777);
 //    if (mkdir(folderName.c_str(), 0777) == -1)
 //        std::cout<<"Directory " << folderName << " is already exist" << std::endl;
 //    else
