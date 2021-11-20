@@ -30,11 +30,11 @@ edgeweight computeMaxWeightedDegree(const Graph &G, bool inDegree = false) {
 #ifndef NETWORKIT_OMP2
 #pragma omp parallel for reduction(max : result)
     for (omp_index u = 0; u < static_cast<omp_index>(G.upperNodeIdBound()); ++u) {
-        result = std::max(result, inDegree ? G.weightedDegreeIn(u) : G.weightedDegree(u));
+        result = std::max(result, inDegree ? (edgeweight)G.weightedDegreeIn(u) : (edgeweight)G.weightedDegree(u));
     }
 #else
     G.forNodes([&](const node u) {
-        result = std::max(result, inDegree ? G.weightedDegreeIn(u) : G.weightedDegree(u));
+        result = std::max(result, inDegree ? (edgeweight)G.weightedDegreeIn(u) : (edgeweight)G.weightedDegree(u));
     });
 #endif
     return result;
