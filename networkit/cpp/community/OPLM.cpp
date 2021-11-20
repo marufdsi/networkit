@@ -5,7 +5,8 @@
  *      Author: cls
  */
 
-#include "OriginalPLM.h"
+#include <networkit/community/OPLM.hpp>
+#include <iostream>
 #include <omp.h>
 
 #include <networkit/auxiliary/Log.hpp>

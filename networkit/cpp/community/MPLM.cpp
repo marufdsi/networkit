@@ -13,9 +13,10 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <inttypes.h>
+#include <omp.h>
+#include <iostream>
 
 #include <networkit/community/MPLM.hpp>
-#include <omp.h>
 #include <networkit/community/Modularity.hpp>
 #include <networkit/auxiliary/Log.hpp>
 #include <networkit/auxiliary/SignalHandling.hpp>
@@ -119,7 +120,7 @@ namespace NetworKit {
         // init communities to singletons
         Partition zeta(z);
 //        zeta.allToSingletons();
-        zeta.allToSeqSingletons();
+        zeta.allToSingletons();
         index o = zeta.upperBound();
 
         // init graph-dependent temporaries
