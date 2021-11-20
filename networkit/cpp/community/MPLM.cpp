@@ -129,14 +129,17 @@ namespace NetworKit {
 //        DEBUG("total edge weight: ", total);
         f_weight divisor = (2 * total * total); // needed in modularity calculation
 
-        const count *outDegree;
+        std::vector<count> outDegree;
         const std::vector<f_weight> *outEdgeWeights;
         const std::vector<node> *outEdges;
         bool isGraphWeighted = G->isWeighted();
 
-        outDegree = G->getOutDegree();
+//        outDegree = G->getOutDegree();
         outEdgeWeights = G->getOutEdgeWeights();
         outEdges = G->getOutEdges();
+        for (auto oe : outEdges) {
+            outDegree.push_back(oe.size());
+        }
 
         index max_tid = omp_get_max_threads();
         index max_deg_arr[max_tid];
@@ -378,7 +381,7 @@ namespace NetworKit {
 //            << (tot_move_count/iter) << std::endl;
         };
         handler.assureRunning();
-        double old_modularity = modularity.getQuality(zeta, G);
+        double old_modularity = modularity.getQuality(zeta, *G);
         // first move phase
         Aux::Timer timer;
         struct timespec c_start, c_end;
@@ -405,7 +408,7 @@ namespace NetworKit {
 //        timing["move"].push_back(timer.elapsedMilliseconds());
         timing["move"].push_back(m_time);
 //        std::cout<< "Phase: " << move_iter << " Time: " << (double)(c_end - c_start) / CLOCKS_PER_SEC * 1000 << std::endl;
-        double new_modularity = modularity.getQuality(zeta, G);
+        double new_modularity = modularity.getQuality(zeta, *G);
         handler.assureRunning();
         /*if(move_iter > 1 && (new_modularity - old_modularity)<0.000001)
             change = false;*/
@@ -498,7 +501,7 @@ namespace NetworKit {
     }
 
     std::pair<Graph, std::vector<node> > MPLM::coarsen(const Graph &G, const Partition &zeta) {
-        ParallelPartitionCoarsening parCoarsening(G, zeta);
+        ParallelPartitionCoarsening parCoarsening(*G, zeta);
         parCoarsening.run();
         return {parCoarsening.getCoarseGraph(), parCoarsening.getFineToCoarseNodeMapping()};
     }

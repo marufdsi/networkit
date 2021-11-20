@@ -1223,6 +1223,28 @@ public:
     count degree(node v) const { return outEdges[v].size(); }
 
     /**
+     * Returns the outgoing edge weight array.
+     *
+     * @return The edge weight array.
+     */
+    const std::vector<f_weight>* getOutEdgeWeights() const {
+        const std::vector<f_weight>* _outEdgeWeights;
+        _outEdgeWeights = &outEdgeWeights[0];
+        return _outEdgeWeights;
+    }
+
+    const std::vector<node>* getOutEdges() const {
+        const std::vector<node>* _outEdges;
+        _outEdges = &outEdges[0];
+        return _outEdges;
+    }
+
+    const node* getOutEdge(node u) const {
+        const node* _outEdge;
+        _outEdge = &outEdges[u][0];
+        return _outEdge;
+    }
+    /**
      * Get the number of incoming neighbors of @a v.
      *
      * @param v Node.

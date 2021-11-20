@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <string.h>
-
+#include <string>
 #include <sys/syscall.h>
 #include <linux/perf_event.h>
 #ifndef SKYLAKE

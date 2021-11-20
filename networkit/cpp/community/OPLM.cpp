@@ -197,7 +197,7 @@ namespace NetworKit {
             count iter = 0;
             do {
                 moved = false;
-                old_mod = modularity.getQuality(zeta, G);
+                old_mod = modularity.getQuality(zeta, *G);
                 // apply node movement according to parallelization strategy
                 if (this->parallelism == "none") {
                     G->forNodes(tryMove);
@@ -222,13 +222,13 @@ namespace NetworKit {
                     WARN("move phase aborted after ", maxIter, " iterations");
                 }
                 iter += 1;
-                new_mod = modularity.getQuality(zeta, G);
+                new_mod = modularity.getQuality(zeta, *G);
             } while (moved  /*&& (new_mod - old_mod)>0.000001 */&& (iter < maxIter) && handler.isRunning());
             DEBUG("iterations in move phase: ", iter);
             ori_move_iter++;
         };
         handler.assureRunning();
-        double old_modularity = modularity.getQuality(zeta, G);
+        double old_modularity = modularity.getQuality(zeta, *G);
         // first move phase
 //        Aux::Timer timer;
         struct timespec c_start, c_end;
@@ -243,7 +243,7 @@ namespace NetworKit {
 //        timing["move"].push_back(timer.elapsedMilliseconds());
         timing["move"].push_back(m_time);
 //        std::cout<< "Phase: " << ori_move_iter << " Time: " << (double)(c_end - c_start) / CLOCKS_PER_SEC * 1000 << std::endl;
-        double new_modularity = modularity.getQuality(zeta, G);
+        double new_modularity = modularity.getQuality(zeta, *G);
         handler.assureRunning();
         /*if(ori_move_iter > 1 && (new_modularity - old_modularity)<0.000001)
             change = false;*/
@@ -252,7 +252,7 @@ namespace NetworKit {
             clock_gettime(CLOCK_REALTIME, &c_start);
 //            timer.start();
             //
-            std::pair<Graph, std::vector<node>> coarsened = coarsen(G, zeta);	// coarsen graph according to communitites
+            std::pair<Graph, std::vector<node>> coarsened = coarsen(*G, zeta);	// coarsen graph according to communitites
             //
 //            timer.stop();
             clock_gettime(CLOCK_REALTIME, &c_end);

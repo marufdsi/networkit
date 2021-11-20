@@ -150,7 +150,7 @@ namespace NetworKit {
 
 //        std::vector<std::vector<index > > community_counter = std::vector<std::vector<index > >(33,std::vector<index>(16, 0));
 //        count ittr_counter = 0;
-        const count *outDegree;
+        std::vector<count> outDegree;
         const std::vector<f_weight> *outEdgeWeights;
         const std::vector<node> *outEdges;
         bool isGraphWeighted = G->isWeighted();
@@ -178,9 +178,12 @@ namespace NetworKit {
 
         const   __m512 total_vec = _mm512_set1_ps(total);
 
-        outDegree = G->getOutDegree();
+//        outDegree = G->getOutDegree();
         outEdgeWeights = G->getOutEdgeWeights();
         outEdges = G->getOutEdges();
+        for (auto oe : outEdges) {
+            outDegree.push_back(oe.size());
+        }
 
         index max_tid = omp_get_max_threads();
         index max_deg_arr[max_tid];
@@ -1029,7 +1032,7 @@ namespace NetworKit {
 
 
         handler.assureRunning();
-        double old_modularity = modularity.getQuality(zeta, G);
+        double old_modularity = modularity.getQuality(zeta, *G);
         // first move phase
         Aux::Timer timer;
         struct timespec c_start, c_end;
@@ -1056,7 +1059,7 @@ namespace NetworKit {
 //        printf("[%d] move-phase time (%.4f secs)\n", m_iter, (double)(c_end - c_start) / CLOCKS_PER_SEC);
 //        timing["move"].push_back(timer.elapsedMilliseconds());
         timing["move"].push_back(m_time);
-        double new_modularity = modularity.getQuality(zeta, G);
+        double new_modularity = modularity.getQuality(zeta, *G);
         handler.assureRunning();
         /*if(m_iter > 1 && (new_modularity - old_modularity)<0.000001)
             change = false;*/
@@ -1066,7 +1069,7 @@ namespace NetworKit {
 
             clock_gettime(CLOCK_REALTIME, &c_start);
             //
-            std::pair<Graph, std::vector<node>> coarsened = coarsen(G, zeta);	// coarsen graph according to communitites
+            std::pair<Graph, std::vector<node>> coarsened = coarsen(*G, zeta);	// coarsen graph according to communitites
             //
             clock_gettime(CLOCK_REALTIME, &c_end);
             double coarsen_time = ((c_end.tv_sec * 1000 + (c_end.tv_nsec / 1.0e6)) - (c_start.tv_sec * 1000 + (c_start.tv_nsec / 1.0e6)));

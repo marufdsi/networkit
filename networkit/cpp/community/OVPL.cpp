@@ -258,7 +258,7 @@ namespace NetworKit {
         f_weight divisor = (2 * total * total); // needed in modularity calculation
 
         /// Declare variable to support vectorization
-        const count *outDegree;
+        std::vector<count> outDegree;
         const std::vector<f_weight> *outEdgeWeights;
         const std::vector<node> *outEdges;
         bool isGraphWeighted = G->isWeighted();
@@ -294,8 +294,13 @@ namespace NetworKit {
         sint max_deg_of_graph = 0;
         index max_tid = omp_get_max_threads();
 //        std::cout<<"Max Thread: "<< max_tid <<std::endl;
+        outEdgeWeights = G->getOutEdgeWeights();
+        outEdges = G->getOutEdges();
+        for (auto oe : outEdges) {
+            outDegree.push_back(oe.size());
+        }
         if(_itter == 0){
-            outDegree = G->getOutDegree();
+//            outDegree = G->getOutDegree();
             index max_deg_arr[max_tid];
             #pragma omp parallel
             {
@@ -394,8 +399,6 @@ namespace NetworKit {
             struct timespec start_initialization, end_initialization;
             clock_gettime(CLOCK_REALTIME, &start_initialization);
 #endif
-            outEdgeWeights = G->getOutEdgeWeights();
-            outEdges = G->getOutEdges();
             std::vector<std::vector<sint> > mark;
             mark.resize(max_tid);
 //            nodeAffinity.resize(max_tid);
@@ -937,7 +940,7 @@ namespace NetworKit {
                 clustering_time = 0.0;
                     affinity_time = 0.0;
 #endif
-//                old_mod = modularity.getQuality(zeta, G);
+//                old_mod = modularity.getQuality(zeta, *G);
                 moved = false;
                 // apply node movement according to parallelization strategy
                 if (this->parallelism == "none") {
@@ -982,10 +985,10 @@ namespace NetworKit {
                 if(_itter == 0){
                         auto end_move = std::chrono::high_resolution_clock::now();
                         std::chrono::duration<double, std::milli> elapsed_move_time = end_move - start_move;
-                        f_first_move_log << iter << "," << elapsed_move_time.count() << "," << zeta.numberOfSubsets() << "," << modularity.getQuality(zeta, G) << ","<< (affinity_time/1000) << "," << (clustering_time/1000) << std::endl;
+                        f_first_move_log << iter << "," << elapsed_move_time.count() << "," << zeta.numberOfSubsets() << "," << modularity.getQuality(zeta, *G) << ","<< (affinity_time/1000) << "," << (clustering_time/1000) << std::endl;
                     }
 #endif
-//                new_mod = modularity.getQuality(zeta, G);
+//                new_mod = modularity.getQuality(zeta, *G);
             } while (moved /*&& (new_mod - old_mod)>0.000001*/ && (iter < maxIter) && handler.isRunning());
             _itter++;
 //            std::cout<< _itter << " iterations: " << iter << " total moves: " << tot_move_count << " avg moves: " << (tot_move_count/iter) << std::endl;
@@ -994,13 +997,13 @@ namespace NetworKit {
             auto end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> elapsed_time = end - start;
 //                std::cout << "Elapsed Time for Move#"<< _itter <<": " << elapsed_time.count() << std::endl;
-                f_move_log << _itter << "," << iter << "," << (elapsed_time.count()/iter) << "," << elapsed_time.count() << "," << modularity.getQuality(zeta, G) << "," << zeta.numberOfSubsets() << std::endl;
+                f_move_log << _itter << "," << iter << "," << (elapsed_time.count()/iter) << "," << elapsed_time.count() << "," << modularity.getQuality(zeta, *G) << "," << zeta.numberOfSubsets() << std::endl;
 #endif
 
         };
         handler.assureRunning();
         // first move phase
-        double old_modularity = modularity.getQuality(zeta, G);
+        double old_modularity = modularity.getQuality(zeta, *G);
         count old_community = zeta.numberOfSubsets();
 //        struct timespec start_move_phase, end_move_phase;
         Aux::Timer timer;
@@ -1051,7 +1054,7 @@ namespace NetworKit {
 //            elapsed_move_phase_time = ((end_move_phase.tv_sec*1000 + (end_move_phase.tv_nsec/1.0e6)) - (start_move_phase.tv_sec*1000 + (start_move_phase.tv_nsec/1.0e6)));
 #endif
         count new_community = zeta.numberOfSubsets();
-        double new_modularity = modularity.getQuality(zeta, G);
+        double new_modularity = modularity.getQuality(zeta, *G);
         /// Compare the modularity before and after move phase
         /*if(_itter > 1 && (new_modularity - old_modularity) < 0.000001 *//*old_modularity == new_modularity*//*){
             change = false;
@@ -1075,7 +1078,7 @@ namespace NetworKit {
                 }*/
 #endif
             clock_gettime(CLOCK_REALTIME, &c_start);
-            std::pair<Graph, std::vector<node>> coarsened = coarsen(G, zeta);	// coarsen graph according to communitites
+            std::pair<Graph, std::vector<node>> coarsened = coarsen(*G, zeta);	// coarsen graph according to communitites
             clock_gettime(CLOCK_REALTIME, &c_end);
             double coarsen_time = ((c_end.tv_sec * 1000 + (c_end.tv_nsec / 1.0e6)) - (c_start.tv_sec * 1000 + (c_start.tv_nsec / 1.0e6)));
 //            clock_gettime(CLOCK_REALTIME, &end_coarsen);
