@@ -1,5 +1,5 @@
 /*
- * MLPLM.cpp
+ * OPLM.cpp
  *
  *  Created on: 20.11.2013
  *      Author: cls
@@ -26,16 +26,16 @@
 int ori_move_iter = 0;
 namespace NetworKit {
 
-    OriginalPLM::OriginalPLM(const Graph& G, bool refine, f_weight gamma, std::string par, count maxIter, bool turbo, bool recurse) : CommunityDetectionAlgorithm(G), parallelism(par), refine(refine), gamma(gamma), maxIter(maxIter), turbo(turbo), recurse(recurse) {
+    OPLM::OPLM(const Graph& G, bool refine, f_weight gamma, std::string par, count maxIter, bool turbo, bool recurse) : CommunityDetectionAlgorithm(G), parallelism(par), refine(refine), gamma(gamma), maxIter(maxIter), turbo(turbo), recurse(recurse) {
 
     }
 
-    OriginalPLM::OriginalPLM(const Graph& G, const OriginalPLM& other) : CommunityDetectionAlgorithm(G), parallelism(other.parallelism), refine(other.refine), gamma(other.gamma), maxIter(other.maxIter), turbo(other.turbo), recurse(other.recurse) {
+    OPLM::OPLM(const Graph& G, const OPLM& other) : CommunityDetectionAlgorithm(G), parallelism(other.parallelism), refine(other.refine), gamma(other.gamma), maxIter(other.maxIter), turbo(other.turbo), recurse(other.recurse) {
 
     }
 
 
-    void OriginalPLM::run() {
+    void OPLM::run() {
         Aux::SignalHandler handler;
         Modularity modularity;
         DEBUG("calling run method on " , G->toString());
@@ -261,7 +261,7 @@ namespace NetworKit {
 //            timing["coarsen"].push_back(timer.elapsedMilliseconds());
             timing["coarsen"].push_back(coarsen_time);
 
-            OriginalPLM onCoarsened(coarsened.first, this->refine, this->gamma, this->parallelism, this->maxIter, this->turbo);
+            OPLM onCoarsened(coarsened.first, this->refine, this->gamma, this->parallelism, this->maxIter, this->turbo);
             onCoarsened.run();
             Partition zetaCoarse = onCoarsened.getPartition();
 
@@ -312,9 +312,9 @@ namespace NetworKit {
         hasRun = true;
     }
 
-    std::string NetworKit::OriginalPLM::toString() const {
+    std::string NetworKit::OPLM::toString() const {
         std::stringstream stream;
-        stream << "OriginalPLM(";
+        stream << "OPLM(";
         stream << parallelism;
         if (refine) {
             stream << "," << "refine";
@@ -331,13 +331,13 @@ namespace NetworKit {
         return stream.str();
     }
 
-    std::pair<Graph, std::vector<node> > OriginalPLM::coarsen(const Graph& G, const Partition& zeta) {
+    std::pair<Graph, std::vector<node> > OPLM::coarsen(const Graph& G, const Partition& zeta) {
         ParallelPartitionCoarsening parCoarsening(G, zeta);
         parCoarsening.run();
         return {parCoarsening.getCoarseGraph(),parCoarsening.getFineToCoarseNodeMapping()};
     }
 
-    Partition OriginalPLM::prolong(const Graph& Gcoarse, const Partition& zetaCoarse, const Graph& Gfine, std::vector<node> nodeToMetaNode) {
+    Partition OPLM::prolong(const Graph& Gcoarse, const Partition& zetaCoarse, const Graph& Gfine, std::vector<node> nodeToMetaNode) {
         Partition zetaFine(Gfine.upperNodeIdBound());
         zetaFine.setUpperBound(zetaCoarse.upperBound());
 
@@ -353,7 +353,7 @@ namespace NetworKit {
 
 
 
-    std::map<std::string, std::vector<double > > OriginalPLM::getTiming() {
+    std::map<std::string, std::vector<double > > OPLM::getTiming() {
         return timing;
     }
 
