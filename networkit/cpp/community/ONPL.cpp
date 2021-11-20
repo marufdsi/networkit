@@ -1,8 +1,8 @@
 /*
- * MLPLM.cpp
+ * ONPL.cpp
  *
- *  Created on: 20.11.2013
- *      Author: cls
+ *  Created on: 10.10.2018
+ *      Author: Md Maruf Hossain
  */
 
 #include <asm/unistd.h>
@@ -13,22 +13,23 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <inttypes.h>
+#include <omp.h>
 
 #include <networkit/community/ONPL.hpp>
-#include <omp.h>
 #include <networkit/coarsening/ParallelPartitionCoarsening.hpp>
 #include <networkit/coarsening/ClusteringProjector.hpp>
 #include <networkit/auxiliary/Log.hpp>
 #include <networkit/auxiliary/Timer.hpp>
 #include <networkit/auxiliary/SignalHandling.hpp>
 #include <networkit/community/Modularity.hpp>
+#include <networkit/auxiliary/PowerCalculator.hpp>
+#include "fvec.h"
 #include <iostream>
 #include <algorithm>
 #include <chrono>
 #include <sstream>
 #include <fstream>
 #include <limits>
-#include "fvec.h"
 #include <mmintrin.h>
 #include <emmintrin.h>
 #include <smmintrin.h>
@@ -39,7 +40,6 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <immintrin.h>
-#include "PowerCalculator.h"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE

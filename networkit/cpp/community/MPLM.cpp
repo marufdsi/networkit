@@ -1,8 +1,8 @@
 /*
- * MLPLM.cpp
+ * MPLM.cpp
  *
- *  Created on: 20.11.2013
- *      Author: cls
+ *  Created on: 10.10.2018
+ *      Author: Md Maruf Hossain
  */
 
 #include <asm/unistd.h>
@@ -14,19 +14,21 @@
 #include <sys/syscall.h>
 #include <inttypes.h>
 
-#include "ModifiedPLM.h"
+#include <networkit/MPLM.hpp>
 #include <omp.h>
-#include "../coarsening/ParallelPartitionCoarsening.h"
-#include "../coarsening/ClusteringProjector.h"
-#include "../auxiliary/Log.h"
-#include "../auxiliary/Timer.h"
-#include "../auxiliary/SignalHandling.h"
-#include "../community/Modularity.h"
+#include <networkit/community/Modularity.hpp>
+#include <networkit/auxiliary/Log.hpp>
+#include <networkit/auxiliary/SignalHandling.hpp>
+#include <networkit/auxiliary/Timer.hpp>
+#include <networkit/coarsening/ClusteringProjector.hpp>
+#include <networkit/coarsening/ParallelPartitionCoarsening.hpp>
+#include <networkit/community/PLM.hpp>
+#include <networkit/auxiliary/PowerCalculator.hpp>
+
 #include<time.h>
 #include <sys/time.h>
 
 #include <sstream>
-#include "PowerCalculator.h"
 
 #define ONE_THREAD false
 #define MOVE_DETAILS false
@@ -44,13 +46,13 @@ int move_iter = 0;
 
 namespace NetworKit {
 
-    ModifiedPLM::ModifiedPLM(const Graph &G, bool refine, f_weight gamma, std::string par, count maxIter, bool turbo,
+    MPLM::MPLM(const Graph &G, bool refine, f_weight gamma, std::string par, count maxIter, bool turbo,
                              bool recurse) : CommunityDetectionAlgorithm(G), parallelism(par), refine(refine),
                                              gamma(gamma), maxIter(maxIter), turbo(turbo), recurse(recurse) {
 
     }
 
-    ModifiedPLM::ModifiedPLM(const Graph &G, const ModifiedPLM &other) : CommunityDetectionAlgorithm(G),
+    MPLM::MPLM(const Graph &G, const MPLM &other) : CommunityDetectionAlgorithm(G),
                                                                          parallelism(other.parallelism),
                                                                          refine(other.refine), gamma(other.gamma),
                                                                          maxIter(other.maxIter), turbo(other.turbo),
@@ -58,11 +60,11 @@ namespace NetworKit {
 
     }
 
-    void ModifiedPLM::initMPLM() {
+    void MPLM::initMPLM() {
         move_iter = 0;
     }
 
-    long ModifiedPLM::perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags){
+    long MPLM::perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags){
         int ret;
         ret = syscall(__NR_perf_event_open, hw_event, pid, cpu, group_fd, flags);
         return ret;
@@ -70,7 +72,7 @@ namespace NetworKit {
 
     std::ofstream f_move_plm_details;
 
-    void ModifiedPLM::setupMoveDetailsCSVFile(std::string move_details) {
+    void MPLM::setupMoveDetailsCSVFile(std::string move_details) {
 #if MOVE_DETAILS
         std::ifstream infile(move_details);
         bool existing_file = infile.good();
@@ -81,14 +83,14 @@ namespace NetworKit {
 #endif
     }
 
-    void ModifiedPLM::setupMPLMPowerFile(std::string _graphName, count threads) {
+    void MPLM::setupMPLMPowerFile(std::string _graphName, count threads) {
 #if POWER_LOG
         graphName = _graphName;
         _thread = threads;
 #endif
     }
 
-    void ModifiedPLM::run() {
+    void MPLM::run() {
         Aux::SignalHandler handler;
         Modularity modularity;
         /// perf event attributes
@@ -422,7 +424,7 @@ namespace NetworKit {
 //            timing["coarsen"].push_back(timer.elapsedMilliseconds());
             timing["coarsen"].push_back(coarsen_time);
 
-            ModifiedPLM onCoarsened(coarsened.first, this->refine, this->gamma, this->parallelism, this->maxIter,
+            MPLM onCoarsened(coarsened.first, this->refine, this->gamma, this->parallelism, this->maxIter,
                                     this->turbo);
             onCoarsened.run();
             Partition zetaCoarse = onCoarsened.getPartition();
@@ -476,9 +478,9 @@ namespace NetworKit {
         hasRun = true;
     }
 
-    std::string NetworKit::ModifiedPLM::toString() const {
+    std::string NetworKit::MPLM::toString() const {
         std::stringstream stream;
-        stream << "ModifiedPLM(";
+        stream << "MPLM(";
         stream << parallelism;
         if (refine) {
             stream << "," << "refine";
@@ -495,13 +497,13 @@ namespace NetworKit {
         return stream.str();
     }
 
-    std::pair<Graph, std::vector<node> > ModifiedPLM::coarsen(const Graph &G, const Partition &zeta) {
+    std::pair<Graph, std::vector<node> > MPLM::coarsen(const Graph &G, const Partition &zeta) {
         ParallelPartitionCoarsening parCoarsening(G, zeta);
         parCoarsening.run();
         return {parCoarsening.getCoarseGraph(), parCoarsening.getFineToCoarseNodeMapping()};
     }
 
-    Partition ModifiedPLM::prolong(const Graph &Gcoarse, const Partition &zetaCoarse, const Graph &Gfine,
+    Partition MPLM::prolong(const Graph &Gcoarse, const Partition &zetaCoarse, const Graph &Gfine,
                                    std::vector<node> nodeToMetaNode) {
         Partition zetaFine(Gfine.upperNodeIdBound());
         zetaFine.setUpperBound(zetaCoarse.upperBound());
@@ -517,11 +519,11 @@ namespace NetworKit {
     }
 
 
-    std::map<std::string, std::vector<double> > ModifiedPLM::getTiming() {
+    std::map<std::string, std::vector<double> > MPLM::getTiming() {
         return timing;
     }
 
-    std::map<std::string, std::vector<long long > > ModifiedPLM::getCacheCount() {
+    std::map<std::string, std::vector<long long > > MPLM::getCacheCount() {
         return cache_info;
     }
 

@@ -1,12 +1,12 @@
 /*
- * ModifiedPLM.h
+ * MPLM.h
  *
- *  Created on: 20.11.2013
- *      Author: cls
+ *  Created on: 10.10.2018
+ *      Author: Md Maruf Hossain
  */
 
-#ifndef ModifiedPLM_H_
-#define ModifiedPLM_H_
+#ifndef MPLM_H_
+#define MPLM_H_
 
 #include "CommunityDetectionAlgorithm.h"
 
@@ -18,7 +18,7 @@ namespace NetworKit {
  * @ingroup community
  * Parallel Louvain Method - a multi-level modularity maximizer.
  */
-class ModifiedPLM: public NetworKit::CommunityDetectionAlgorithm {
+class MPLM: public NetworKit::CommunityDetectionAlgorithm {
 
 /*private:
     int move_iter = 0;
@@ -39,9 +39,9 @@ public:
 	 * @param[in]	recurse	use recursive coarsening, see http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.049902 for some explanations (default: true)
 	 *
 	 */
-	ModifiedPLM(const Graph& G, bool refine=false, f_weight gamma = 1.0, std::string par="balanced", count maxIter=32, bool turbo = true, bool recurse = true);
+	MPLM(const Graph& G, bool refine=false, f_weight gamma = 1.0, std::string par="balanced", count maxIter=32, bool turbo = true, bool recurse = true);
 
-	ModifiedPLM(const Graph& G, const ModifiedPLM& other);
+	MPLM(const Graph& G, const MPLM& other);
 
 	void initMPLM();
 
