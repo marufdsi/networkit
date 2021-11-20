@@ -137,7 +137,7 @@ namespace NetworKit {
 //        outDegree = G->getOutDegree();
         outEdgeWeights = G->getOutEdgeWeights();
         outEdges = G->getOutEdges();
-        for (int i=0; i<outEdges.size(); ++i) {
+        for (int i=0; i<z; ++i) {
             outDegree.push_back(outEdges[i].size());
         }
 
