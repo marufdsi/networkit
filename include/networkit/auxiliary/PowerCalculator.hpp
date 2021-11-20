@@ -801,10 +801,11 @@ static void rapl_sysfs_results(std::string version, std::string graph_name, int 
     std::ofstream power_log;
 
     std::string folderName = "EUPAR_Results/PowerLog/";
-    if (mkdir(folderName.c_str(), 0777) == -1)
-        std::cout<<"Directory " << folderName << " is already exist" << std::endl;
-    else
-        std::cout<<"Directory " << folderName << " created" << std::endl;
+    mkdir(folderName.c_str(), 0777)
+//    if (mkdir(folderName.c_str(), 0777) == -1)
+//        std::cout<<"Directory " << folderName << " is already exist" << std::endl;
+//    else
+//        std::cout<<"Directory " << folderName << " created" << std::endl;
 
     std::string logFileName = folderName + "PowerLog_" + (arch == 1 ? "Skylake" : "Cascade") + ".csv";
     std::ifstream fileExist(logFileName);

@@ -234,13 +234,13 @@ namespace NetworKit {
 //        long long cache_miss_count;
 //        int fd;
         ///
-        DEBUG("calling run method on " , G.toString());
+        DEBUG("calling run method on " , G->toString());
 
         #if ONE_THREAD
             omp_set_dynamic(0);
             omp_set_num_threads(1);
         #endif
-        count z = G.upperNodeIdBound();
+        count z = G->upperNodeIdBound();
 //        count move_count, tot_move_count = 0;
         double affinity_time = 0.0;
         double clustering_time = 0.0;
@@ -253,7 +253,7 @@ namespace NetworKit {
         // init graph-dependent temporaries
         std::vector<f_weight > volNode(z, 0.0);
         // $\omega(E)$
-        f_weight total = G.totalEdgeWeight();
+        f_weight total = G->totalEdgeWeight();
         DEBUG("total edge weight: " , total);
         f_weight divisor = (2 * total * total); // needed in modularity calculation
 
@@ -261,7 +261,7 @@ namespace NetworKit {
         const count *outDegree;
         const std::vector<f_weight> *outEdgeWeights;
         const std::vector<node> *outEdges;
-        bool isGraphWeighted = G.isWeighted();
+        bool isGraphWeighted = G->isWeighted();
         // need to replace by _group
 //        std::vector<std::vector<node> > node_sort_by_deg;
         node** node_sort_by_deg;
@@ -295,7 +295,7 @@ namespace NetworKit {
         index max_tid = omp_get_max_threads();
 //        std::cout<<"Max Thread: "<< max_tid <<std::endl;
         if(_itter == 0){
-            outDegree = G.getOutDegree();
+            outDegree = G->getOutDegree();
             index max_deg_arr[max_tid];
             #pragma omp parallel
             {
@@ -303,8 +303,8 @@ namespace NetworKit {
                 max_deg_arr[tid] = max_deg_of_graph;
                 #pragma omp for schedule(guided)
                 for (index u = 0; u < z; ++u) {
-                    volNode[u] += G.weightedDegree(u);
-                    volNode[u] += G.weight(u, u); // consider self-loop twice
+                    volNode[u] += G->weightedDegree(u);
+                    volNode[u] += G->weight(u, u); // consider self-loop twice
                     // TRACE("init volNode[" , u , "] to " , volNode[u]);
                     if(max_deg_arr[tid] < outDegree[u]){
                         max_deg_arr[tid] = outDegree[u];
@@ -324,9 +324,9 @@ namespace NetworKit {
 //            std::cout<<"Max Degree_of Graph: "<<max_deg_of_graph<<std::endl;
 
         } else {
-            G.parallelForNodes([&](node u) { // calculate and store volume of each node
-                volNode[u] += G.weightedDegree(u);
-                volNode[u] += G.weight(u, u); // consider self-loop twice
+            G->parallelForNodes([&](node u) { // calculate and store volume of each node
+                volNode[u] += G->weightedDegree(u);
+                volNode[u] += G->weight(u, u); // consider self-loop twice
                 // TRACE("init volNode[" , u , "] to " , volNode[u]);
             });
         }
@@ -394,8 +394,8 @@ namespace NetworKit {
             struct timespec start_initialization, end_initialization;
             clock_gettime(CLOCK_REALTIME, &start_initialization);
 #endif
-            outEdgeWeights = G.getOutEdgeWeights();
-            outEdges = G.getOutEdges();
+            outEdgeWeights = G->getOutEdgeWeights();
+            outEdges = G->getOutEdges();
             std::vector<std::vector<sint> > mark;
             mark.resize(max_tid);
 //            nodeAffinity.resize(max_tid);
@@ -740,11 +740,11 @@ namespace NetworKit {
             // collect edge weight to neighbor clusters
 
             neigh_comm[tid].clear();
-            G.forNeighborsOf(u, [&](node v) {
+            G->forNeighborsOf(u, [&](node v) {
                 turboAffinity[tid][zeta[v]] = -1; // set all to -1 so we can see when we get to it the first time
             });
             turboAffinity[tid][zeta[u]] = 0;
-            G.forNeighborsOf(u, [&](node v, f_weight weight) {
+            G->forNeighborsOf(u, [&](node v, f_weight weight) {
                 if (u != v) {
                     index C = zeta[v];
                     if (turboAffinity[tid][C] == -1) {
@@ -831,13 +831,13 @@ namespace NetworKit {
             index tid = omp_get_thread_num();
             // collect edge weight to neighbor clusters
             count uniqueComm = 0;
-            G.forNeighborsOf(u, [&](node v) {
+            G->forNeighborsOf(u, [&](node v) {
                 nodeAffinity[tid][0][zeta[v]] = -1; // set all to -1 so we can see when we get to it the first time
                 node_neigh_comm[tid][0][uniqueComm++] = 0;
             });
             nodeAffinity[tid][0][zeta[u]] = 0;
             uniqueComm = 0;
-            G.forNeighborsOf(u, [&](node v, f_weight weight) {
+            G->forNeighborsOf(u, [&](node v, f_weight weight) {
                 if (u != v) {
                     index C = zeta[v];
                     if (nodeAffinity[tid][0][C] == -1) {
@@ -941,9 +941,9 @@ namespace NetworKit {
                 moved = false;
                 // apply node movement according to parallelization strategy
                 if (this->parallelism == "none") {
-                    G.forNodes(tryMove);
+                    G->forNodes(tryMove);
                 } else if (this->parallelism == "simple") {
-                    G.parallelForNodes(tryMove);
+                    G->parallelForNodes(tryMove);
                 } else if (this->parallelism == "balanced") {
                     if(_itter == 0) {
                         frame_size = z / block_size;
@@ -966,7 +966,7 @@ namespace NetworKit {
                         }
                     }
                 } else if (this->parallelism == "none randomized") {
-                    G.forNodesInRandomOrder(tryMove);
+                    G->forNodesInRandomOrder(tryMove);
                 } else {
                     ERROR("unknown parallelization strategy: " , this->parallelism);
                     throw std::runtime_error("unknown parallelization strategy");
@@ -1116,7 +1116,7 @@ namespace NetworKit {
             DEBUG("coarse graph has ", coarsened.first.numberOfNodes(), " nodes and ", coarsened.first.numberOfEdges(), " edges");
             struct timespec start_prolong, end_prolong;
             clock_gettime(CLOCK_REALTIME, &start_prolong);
-            zeta = prolong(coarsened.first, zetaCoarse, G, coarsened.second); // unpack communities in coarse graph onto fine graph
+            zeta = prolong(coarsened.first, zetaCoarse, *G, coarsened.second); // unpack communities in coarse graph onto fine graph
             clock_gettime(CLOCK_REALTIME, &end_prolong);
             double elapsed_prolong_time = ((end_prolong.tv_sec*1000 + (end_prolong.tv_nsec/1.0e6)) - (start_prolong.tv_sec*1000 + (start_prolong.tv_nsec/1.0e6)));
 //            std::cout<<"Prolong Time: "<<elapsed_prolong_time<<std::endl;

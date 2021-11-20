@@ -98,7 +98,7 @@ namespace NetworKit {
 //        long long cache_miss_count;
 //        int fd;
         ///
-//        DEBUG("calling run method on ", G.toString());
+//        DEBUG("calling run method on ", G->toString());
 #if POWER_LOG
         //        if(move_iter == 0)
                     rapl_sysfs_init();
@@ -109,7 +109,7 @@ namespace NetworKit {
         omp_set_dynamic(0);
             omp_set_num_threads(1);
 #endif
-        count z = G.upperNodeIdBound();
+        count z = G->upperNodeIdBound();
 //        count move_count, tot_move_count = 0;
         size_t alignment = 64;
         index max_deg_of_graph = 0;
@@ -125,18 +125,18 @@ namespace NetworKit {
         // init graph-dependent temporaries
         std::vector<f_weight> volNode(z, 0.0);
         // $\omega(E)$
-        f_weight total = G.totalEdgeWeight();
+        f_weight total = G->totalEdgeWeight();
 //        DEBUG("total edge weight: ", total);
         f_weight divisor = (2 * total * total); // needed in modularity calculation
 
         const count *outDegree;
         const std::vector<f_weight> *outEdgeWeights;
         const std::vector<node> *outEdges;
-        bool isGraphWeighted = G.isWeighted();
+        bool isGraphWeighted = G->isWeighted();
 
-        outDegree = G.getOutDegree();
-        outEdgeWeights = G.getOutEdgeWeights();
-        outEdges = G.getOutEdges();
+        outDegree = G->getOutDegree();
+        outEdgeWeights = G->getOutEdgeWeights();
+        outEdges = G->getOutEdges();
 
         index max_tid = omp_get_max_threads();
         index max_deg_arr[max_tid];
@@ -147,8 +147,8 @@ namespace NetworKit {
             max_deg_arr[tid] = max_deg_of_graph;
 #pragma omp for schedule(static)
             for (index u = 0; u < z; ++u) {
-                volNode[u] += G.weightedDegree(u);
-                volNode[u] += G.weight(u, u); // consider self-loop twice
+                volNode[u] += G->weightedDegree(u);
+                volNode[u] += G->weight(u, u); // consider self-loop twice
                 if (max_deg_arr[tid] < outDegree[u]) {
                     max_deg_arr[tid] = outDegree[u];
                 }
@@ -323,18 +323,18 @@ namespace NetworKit {
 //                old_mod = modularity.getQuality(zeta, G);
                 // apply node movement according to parallelization strategy
                 if (this->parallelism == "none") {
-                    G.forNodes(tryMove);
+                    G->forNodes(tryMove);
                 } else if (this->parallelism == "simple") {
-                    G.parallelForNodes(tryMove);
+                    G->parallelForNodes(tryMove);
                 } else if (this->parallelism == "balanced") {
-//                    G.balancedParallelForNodes(tryMove);
+//                    G->balancedParallelForNodes(tryMove);
                     #pragma omp parallel for schedule(guided)
                     for (index u = 0; u < z; ++u) {
-//                        if(G.hasNode(u))
+//                        if(G->hasNode(u))
                             tryMove(u);
                     }
                 } else if (this->parallelism == "none randomized") {
-                    G.forNodesInRandomOrder(tryMove);
+                    G->forNodesInRandomOrder(tryMove);
                 } else {
                     ERROR("unknown parallelization strategy: ", this->parallelism);
                     throw std::runtime_error("unknown parallelization strategy");
@@ -357,7 +357,7 @@ namespace NetworKit {
 #if MOVE_DETAILS
                 clock_gettime(CLOCK_REALTIME, &end_move);
                 double elapsed_move_time = ((end_move.tv_sec*1000 + (end_move.tv_nsec/1.0e6)) - (start_move.tv_sec*1000 + (start_move.tv_nsec/1.0e6)));
-                f_move_plm_details<< move_iter << "," << iter << "," << z << "," << G.numberOfEdges() << "," << elapsed_move_time <<std::endl;
+                f_move_plm_details<< move_iter << "," << iter << "," << z << "," << G->numberOfEdges() << "," << elapsed_move_time <<std::endl;
 #endif
 //                new_mod = modularity.getQuality(zeta, G);
             } while (moved /*&& (new_mod - old_mod)>0.000001*/  && (iter < maxIter) && handler.isRunning());
@@ -443,7 +443,7 @@ namespace NetworKit {
 
 
 //            DEBUG("coarse graph has ", coarsened.first.numberOfNodes(), " nodes and ", coarsened.first.numberOfEdges(), " edges");
-            zeta = prolong(coarsened.first, zetaCoarse, G,
+            zeta = prolong(coarsened.first, zetaCoarse, *G,
                            coarsened.second); // unpack communities in coarse graph onto fine graph
             // refinement phase
             if (refine) {

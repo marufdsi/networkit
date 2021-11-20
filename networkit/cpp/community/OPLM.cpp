@@ -37,12 +37,12 @@ namespace NetworKit {
     void OriginalPLM::run() {
         Aux::SignalHandler handler;
         Modularity modularity;
-        DEBUG("calling run method on " , G.toString());
+        DEBUG("calling run method on " , G->toString());
         #if ONE_THREAD
             omp_set_dynamic(0);
             omp_set_num_threads(1);
         #endif
-        count z = G.upperNodeIdBound();
+        count z = G->upperNodeIdBound();
 
 
         // init communities to singletons
@@ -53,13 +53,13 @@ namespace NetworKit {
         // init graph-dependent temporaries
         std::vector<f_weight > volNode(z, 0.0);
         // $\omega(E)$
-        f_weight total = G.totalEdgeWeight();
+        f_weight total = G->totalEdgeWeight();
         DEBUG("total edge weight: " , total);
         f_weight divisor = (2 * total * total); // needed in modularity calculation
 
-        G.parallelForNodes([&](node u) { // calculate and store volume of each node
-            volNode[u] += G.weightedDegree(u);
-            volNode[u] += G.weight(u, u); // consider self-loop twice
+        G->parallelForNodes([&](node u) { // calculate and store volume of each node
+            volNode[u] += G->weightedDegree(u);
+            volNode[u] += G->weight(u, u); // consider self-loop twice
             // TRACE("init volNode[" , u , "] to " , volNode[u]);
         });
 
@@ -97,15 +97,15 @@ namespace NetworKit {
             // TRACE("trying to move node " , u);
             index tid = omp_get_thread_num();
             neigh_comm[tid].clear();
-            const node* outEdges = G.getOutEdge(u);
-            for (int i = 0; i < G.degree(u); ++i) {
+            const node* outEdges = G->getOutEdge(u);
+            for (int i = 0; i < G->degree(u); ++i) {
                 turboAffinity[tid][zeta[outEdges[i]]] = -1;
             }
-            /*G.forNeighborsOf(u, [&](node v) {
+            /*G->forNeighborsOf(u, [&](node v) {
                 turboAffinity[tid][zeta[v]] = -1; // set all to -1 so we can see when we get to it the first time
             });*/
             turboAffinity[tid][zeta[u]] = 0;
-            for (int i = 0; i < G.degree(u); ++i) {
+            for (int i = 0; i < G->degree(u); ++i) {
                 node v = outEdges[i];
                 if (u != v) {
                     index C = zeta[v];
@@ -114,10 +114,10 @@ namespace NetworKit {
                         turboAffinity[tid][C] = 0;
                         neigh_comm[tid].push_back(C);
                     }
-                    turboAffinity[tid][C] += G.isWeighted() ? G.getOutEdgeWeight<true>(u, i) : fdefaultEdgeWeight;
+                    turboAffinity[tid][C] += G->isWeighted() ? G->getOutEdgeWeight<true>(u, i) : fdefaultEdgeWeight;
                 }
             }
-            /*G.forNeighborsOf(u, [&](node v, f_weight weight) {
+            /*G->forNeighborsOf(u, [&](node v, f_weight weight) {
                 if (u != v) {
                     index C = zeta[v];
                     if (turboAffinity[tid][C] == -1) {
@@ -200,18 +200,18 @@ namespace NetworKit {
                 old_mod = modularity.getQuality(zeta, G);
                 // apply node movement according to parallelization strategy
                 if (this->parallelism == "none") {
-                    G.forNodes(tryMove);
+                    G->forNodes(tryMove);
                 } else if (this->parallelism == "simple") {
-                    G.parallelForNodes(tryMove);
+                    G->parallelForNodes(tryMove);
                 } else if (this->parallelism == "balanced") {
-//                    G.balancedParallelForNodes(tryMove);
+//                    G->balancedParallelForNodes(tryMove);
 #pragma omp parallel for schedule(static)
                     for (index u = 0; u < z; ++u) {
-                        if(G.hasNode(u))
+                        if(G->hasNode(u))
                             tryMove(u);
                     }
                 } else if (this->parallelism == "none randomized") {
-                    G.forNodesInRandomOrder(tryMove);
+                    G->forNodesInRandomOrder(tryMove);
                 } else {
                     ERROR("unknown parallelization strategy: " , this->parallelism);
                     throw std::runtime_error("unknown parallelization strategy");
@@ -278,7 +278,7 @@ namespace NetworKit {
 
 
             DEBUG("coarse graph has ", coarsened.first.numberOfNodes(), " nodes and ", coarsened.first.numberOfEdges(), " edges");
-            zeta = prolong(coarsened.first, zetaCoarse, G, coarsened.second); // unpack communities in coarse graph onto fine graph
+            zeta = prolong(coarsened.first, zetaCoarse, *G, coarsened.second); // unpack communities in coarse graph onto fine graph
             // refinement phase
             if (refine) {
                 DEBUG("refinement phase");
