@@ -8,7 +8,7 @@
 #ifndef MPLM_H_
 #define MPLM_H_
 
-#include "CommunityDetectionAlgorithm.h"
+#include <networkit/community/CommunityDetectionAlgorithm.hpp>
 
 #include <fstream>
 
