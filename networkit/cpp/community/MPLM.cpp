@@ -14,7 +14,7 @@
 #include <sys/syscall.h>
 #include <inttypes.h>
 
-#include <networkit/MPLM.hpp>
+#include <networkit/community/MPLM.hpp>
 #include <omp.h>
 #include <networkit/community/Modularity.hpp>
 #include <networkit/auxiliary/Log.hpp>

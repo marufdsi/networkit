@@ -14,7 +14,7 @@
 #include <networkit/coarsening/ClusteringProjector.hpp>
 #include <networkit/coarsening/ParallelPartitionCoarsening.hpp>
 #include <networkit/community/OPLM.hpp>
-#include <networkit//community/Modularity.hpp>
+#include <networkit/community/Modularity.hpp>
 #include<time.h>
 #include <sys/time.h>
 
