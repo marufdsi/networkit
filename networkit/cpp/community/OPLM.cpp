@@ -58,6 +58,15 @@ namespace NetworKit {
         DEBUG("total edge weight: " , total);
         f_weight divisor = (2 * total * total); // needed in modularity calculation
 
+        std::vector<count> outDegree;
+        const std::vector<f_weight> *outEdgeWeights;
+        const std::vector<node> *outEdges;
+        bool isGraphWeighted = G->isWeighted();
+
+        //        outDegree = G->getOutDegree();
+        outEdgeWeights = G->getOutEdgeWeights();
+        outEdges = G->getOutEdges();
+
         G->parallelForNodes([&](node u) { // calculate and store volume of each node
             volNode[u] += G->weightedDegree(u);
             volNode[u] += G->weight(u, u); // consider self-loop twice
@@ -115,7 +124,7 @@ namespace NetworKit {
                         turboAffinity[tid][C] = 0;
                         neigh_comm[tid].push_back(C);
                     }
-                    turboAffinity[tid][C] += G->isWeighted() ? G->getOutEdgeWeight<true>(u, i) : fdefaultEdgeWeight;
+                    turboAffinity[tid][C] += G->isWeighted() ? outEdgeWeights[u][i] : fdefaultEdgeWeight;
                 }
             }
             /*G->forNeighborsOf(u, [&](node v, f_weight weight) {
