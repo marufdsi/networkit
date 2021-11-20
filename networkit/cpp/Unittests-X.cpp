@@ -2,10 +2,9 @@
 /*
  * Unittests-X.cpp
  *
- *  Created on: 2012
- *      Author: Christian Staudt <christian.staudt@kit.edu>,
- *              Henning Meyerhenke <henning.meyerhenke@kit.edu>,
- *              Manuel Penschuck <networkit@manuel.jetzt>
+ *  Updated: 2021
+ *      Editor: Md Maruf Hossain
+ *
  */
 
 #include <algorithm>
@@ -20,6 +19,90 @@
 #include <networkit/GlobalState.hpp>
 #include <networkit/auxiliary/Log.hpp>
 #include <networkit/auxiliary/Parallelism.hpp>
+#include <networkit/auxiliary/PowerCalculator.hpp>
+
+#include <networkit/community/PLP.hpp>
+#include <networkit/community/PLM.hpp>
+#include <networkit/community/ONPL.hpp>
+#include <networkit/community/OVPL.hpp>
+#include <networkit/community/MPLM.hpp>
+#include <networkit/community/ParallelAgglomerativeClusterer.hpp>
+#include <networkit/community/Modularity.hpp>
+#include <networkit/community/EdgeCut.hpp>
+#include <networkit/community/ClusteringGenerator.hpp>
+#include <networkit/io/METISGraphReader.hpp>
+#include <networkit/io/SNAPGraphReader.hpp>
+#include <networkit/overlap/HashingOverlapper.hpp>
+#include <networkit/community/GraphClusteringTools.hpp>
+#include <networkit/structures/Partition.hpp>
+#include <networkit/community/Modularity.hpp>
+#include <networkit/community/Coverage.hpp>
+#include <networkit/community/ClusteringGenerator.hpp>
+#include <networkit/community/JaccardMeasure.hpp>
+#include <networkit/community/NodeStructuralRandMeasure.hpp>
+#include <networkit/community/GraphStructuralRandMeasure.hpp>
+#include <networkit/community/NMIDistance.hpp>
+#include <networkit/community/DynamicNMIDistance.hpp>
+#include <networkit/auxiliary/NumericTools.hpp>
+#include <networkit/generators/DynamicBarabasiAlbertGenerator.hpp>
+#include <networkit/community/SampledGraphStructuralRandMeasure.hpp>
+#include <networkit/community/SampledNodeStructuralRandMeasure.hpp>
+#include <networkit/community/GraphClusteringTools.hpp>
+#include <networkit/community/PartitionIntersection.hpp>
+#include <networkit/community/HubDominance.hpp>
+#include <networkit/community/IntrapartitionDensity.hpp>
+#include <networkit/community/PartitionFragmentation.hpp>
+#include <networkit/generators/ClusteredRandomGraphGenerator.hpp>
+#include <networkit/generators/ErdosRenyiGenerator.hpp>
+#include <networkit/generators/LFRGenerator.hpp>
+#include <networkit/community/CoverF1Similarity.hpp>
+#include <networkit/community/LFM.hpp>
+#include <networkit/community/OverlappingNMIDistance.hpp>
+#include <networkit/scd/LocalTightnessExpansion.hpp>
+
+#include <tlx/unused.hpp>
+
+#include <sys/stat.h>
+#include<time.h>
+#include <sys/time.h>
+
+#ifndef OVERALL_LOG
+#define OVERALL_LOG true
+#endif
+
+//#ifndef L1D_CACHE_MISS_COUNT
+//#define L1D_CACHE_MISS_COUNT
+//#endif
+
+#ifndef THREAD_DEFINE
+#define THREAD_DEFINE true
+#endif
+
+#ifndef CONFIDENCE_INTERVAL_LOG
+#define CONFIDENCE_INTERVAL_LOG false
+#endif
+
+#ifndef POWER_LOG
+#define POWER_LOG false
+#endif
+
+#ifndef SKYLAKE_X_LOG
+#define SKYLAKE_X_LOG false
+#endif
+
+#ifndef COPPERHEAD
+#define COPPERHEAD false
+#endif
+
+#ifndef NUM_RUN
+#define NUM_RUN 1
+#endif
+
+#ifndef SKIP_RUN
+#define SKIP_RUN 0
+#endif
+
+using namespace NetworKit;
 
 struct Options {
     std::string loglevel = "ERROR";
@@ -58,6 +141,417 @@ struct Options {
 int main(int argc, char *argv[]) {
     std::cout << "*** NetworKit Unit Tests ***\n";
 
+    /// Collect info from commandline arguments
+    count argi = 1;
+    std::string path = "";
+    if(argc>argi) {
+        path = argv[argi++];
+        std::cout << "Path: " << path << std::endl;
+    }
+    std::string ppn;
+    if (argc >argi) {
+        char* th = argv[argi];
+        ppn = argv[argi++];
+#if THREAD_DEFINE
+        omp_set_dynamic(0);
+        Aux::setNumberOfThreads((int)std::strtol((th), (char**)NULL, 10));
+#endif
+    }
+    int version = 0;
+    if (argc > argi) {
+        version = (int)std::strtol(argv[argi++], (char**)NULL, 10);
+    }
+    count _inputMethod = 1;
+    if (argc >= argi) {
+        _inputMethod = (int)std::strtol(argv[argi++], (char**)NULL, 10);
+    }
+    count _iterations = 25;
+    if (argc > argi) {
+        _iterations = (int)std::strtol(argv[argi++], (char**)NULL, 10);
+    }
+    bool fullVec = false;
+    if (argc >= argi) {
+        fullVec = std::stoi(argv[argi++]);
+    }
+    count architecture = 1;
+    if (argc >= argi) {
+        architecture = (int)std::strtol(argv[argi++], (char**)NULL, 10);
+    }
+    bool refine = false;
+    if (argc >= argi) {
+        refine = std::stoi(argv[argi++]);
+    }
+    long cache_size = 25*1024*1024;
+    if (argc >= argi) {
+        cache_size = std::strtol(argv[argi++], (char**)NULL, 10);
+    }
+
+    /// Initialize reader
+    SNAPGraphReader snapReader;
+    METISGraphReader metisReader;
+    Modularity modularity;
+    std::string _graphName, dirName;
+    std::vector<std::string>tokens = Aux::StringTools::split(path, '/');
+    _graphName = Aux::StringTools::split(tokens[tokens.size()-1], '.')[0];
+    Graph G;
+    if(_inputMethod == 1)
+        G = snapReader.read(path);
+    else
+        G = metisReader.read(path);
+
+#if OVERALL_LOG
+    std::ofstream graph_log;
+
+    std::string folderName = "CCPE_Results/";
+    if (mkdir(folderName.c_str(), 0777) == -1)
+        std::cout<<"Directory " << folderName << " is already exist" << std::endl;
+    else
+        std::cout<<"Directory " << folderName << " created" << std::endl;
+    std::string logFileName = folderName + (fullVec ? "Full_Vec_" : "Partial_Vec_") + (architecture == 1 ? "SkyLake" : "CascadeLake") + ".csv";
+
+    std::ifstream infile(logFileName);
+    graph_log.open(logFileName, std::ios_base::out | std::ios_base::app | std::ios_base::ate);
+
+    bool existing_file = infile.good();
+    if (!existing_file) {
+        graph_log << "GraphName" << "," << "Version" << "," << "Nodes" << ","<< "Edges" << "," << "Wall Time" << ","
+                  << "CPU Time" << "," << "Clusters" << "," << "Modularity" << "," << "MaxIterations" << "," << "FirstMoveTime"
+                  << "," << "MoveTime" << "," << "CoarsenTime" << "," << "RefineTime" << "," << "Threads" << "," << "CacheLevel"
+                  << "," << "CacheMissCount" << "," << "Refine" << std::endl;
+    }
+#endif
+    count z = G.upperNodeIdBound();
+    count edges = G.numberOfEdges();
+    struct timespec start, cpu_start, end, cpu_end;
+    double et_plm=0, et_mplm=0.0, et_onpl=0, et_ovpl=0, plm_mod=0, onpl_mod=0, ovpl_mod=0, mplm_mod=0;
+    count plm_subsets=0, onpl_subsets=0, ovpl_subsets=0, mplm_subsets=0;
+
+    if (version == 0) {
+        std::cout << "***** Legacy Version *****" << std::endl;
+        for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
+            Graph gCopy = G;
+            OPLM plm(gCopy, refine, 1.0, "balanced", _iterations);
+#if POWER_LOG
+            //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
+            rapl_sysfs_init();
+            rapl_sysfs_before();
+#endif
+            //            clock_gettime(CLOCK_MONOTONIC, &start);
+            clock_gettime(CLOCK_REALTIME, &start);
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
+            plm.run();
+            if (k>=SKIP_RUN) {
+#if POWER_LOG
+                rapl_sysfs_after();
+                // Results
+                rapl_sysfs_results("PLM", _graphName, std::stoi(ppn), 1, architecture);
+#endif
+                //                clock_gettime(CLOCK_MONOTONIC, &end);
+                clock_gettime(CLOCK_REALTIME, &end);
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_end);
+                long seconds = end.tv_sec - start.tv_sec;
+                long nanoseconds = end.tv_nsec - start.tv_nsec;
+                double elapsed = seconds + nanoseconds*1e-9;
+                seconds = cpu_end.tv_sec - cpu_start.tv_sec;
+                nanoseconds = cpu_end.tv_nsec - cpu_start.tv_nsec;
+                double cpu_elapsed = seconds + nanoseconds*1e-9;
+
+                Partition s_zeta = plm.getPartition();
+                count comm = s_zeta.numberOfSubsets();
+                double mod = modularity.getQuality(s_zeta, G);
+                auto times = plm.getTiming();
+                double move_time = 0.0, coarsen_time = 0.0, refine_time = 0.0;
+                for (double t : times["move"]) {
+                    move_time += t;
+                }
+                for (double t : times["coarsen"]) {
+                    coarsen_time += t;
+                }
+                for (double t : times["refine"]) {
+                    refine_time += t;
+                }
+#if OVERALL_LOG
+                graph_log << _graphName << "," << "PLM" << "," << z << "," << edges << ","
+                          << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
+                          << (_iterations) << "," << times["move"][0] << "," << move_time << ","
+                          << coarsen_time << "," << refine_time << "," << ppn << "," << "L1D"
+                          << "," << 0 << "," << refine << std::endl;
+#endif
+                et_plm += cpu_elapsed;
+                plm_subsets += comm;
+                plm_mod += mod;
+            }
+            //            std::cout<< "[" << k << "] ******************* Successfully Done ************************ " << std::endl;
+        }
+        et_plm = et_plm/NUM_RUN;
+        plm_subsets = plm_subsets/NUM_RUN;
+        plm_mod = plm_mod/NUM_RUN;
+        std::cout << "Total CPU time without refinement: " << et_plm << std::endl;
+        std::cout << "number of clusters: " << plm_subsets << std::endl;
+        std::cout << "modularity: " << plm_mod << std::endl;
+
+    } else if (version == 1) {
+        std::cout << "***** Vectorized Row Version *****" << std::endl;
+        for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
+            Graph gCopy = G;
+            ONPL *vPLM = new ONPL(gCopy, refine, 1.0, "balanced", _iterations, fullVec);
+            std::string vplm_conflict_file = plm_details_folder + "/vplm_conflict_log_" + ppn + "_" + _graphName + ".csv";
+            vPLM->setupCSVFile(vplm_conflict_file);
+            vPLM->initVPLM();
+#if POWER_LOG
+            //            vPLM->setupPowerFile(_graphName, std::stoi(ppn));
+            std::cout<<"Setup energy" << std::endl;
+            rapl_sysfs_init();
+            rapl_sysfs_before();
+            std::cout<<"Setup done" << std::endl;
+#endif
+            //            clock_gettime(CLOCK_MONOTONIC, &start_vplm);
+            clock_gettime(CLOCK_REALTIME, &start);
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
+            vPLM->run();
+            if (k>=SKIP_RUN) {
+                //                clock_gettime(CLOCK_MONOTONIC, &end_vplm);
+                clock_gettime(CLOCK_REALTIME, &end);
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_end);
+                long seconds = end.tv_sec - start.tv_sec;
+                long nanoseconds = end.tv_nsec - start.tv_nsec;
+                double elapsed = seconds + nanoseconds*1e-9;
+                seconds = cpu_end.tv_sec - cpu_start.tv_sec;
+                nanoseconds = cpu_end.tv_nsec - cpu_start.tv_nsec;
+                double cpu_elapsed = seconds + nanoseconds*1e-9;
+#if POWER_LOG
+                std::cout<<"prepare results of energy" << std::endl;
+                rapl_sysfs_after();
+                // Results
+                rapl_sysfs_results("ONPL", _graphName, std::stoi(ppn), 1, architecture);
+                std::cout<<"Done" << std::endl;
+#endif
+
+                Partition v_zeta = vPLM->getPartition();
+                count comm = v_zeta.numberOfSubsets();
+                double mod = modularity.getQuality(v_zeta, G);
+                auto times = vPLM->getTiming();
+                double move_time = 0, coarsen_time = 0, refine_time = 0;
+                for (double t : times["move"]) {
+                    move_time += t;
+                }
+                for (double t : times["coarsen"]) {
+                    coarsen_time += t;
+                }
+                for (double t : times["refine"]) {
+                    refine_time += t;
+                }
+//                auto c_counts = vPLM->getCacheCount();
+                long long cache_count = 0;
+                /*for(auto c : c_counts["move"]){
+                    cache_count += c;
+                }*/
+#if OVERALL_LOG
+#ifdef L1D_CACHE_MISS_COUNT
+                graph_log << _graphName << "," << "ONPL" << "," << z << "," << edges << ","
+                          << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
+                          << (_iterations) << "," << times["move"][0] << "," << move_time << ","
+                          << coarsen_time << "," << refine_time << "," << ppn << "," << "L1D"
+                          << "," << cache_count << "," << refine << std::endl;
+#else
+
+                graph_log << _graphName << "," << "ONPL" << "," << z << "," << edges << ","
+                          << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
+                          << (_iterations) << "," << times["move"][0] << "," << move_time << ","
+                          << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"
+                          << "," << cache_count << "," << refine << std::endl;
+#endif
+#endif
+                et_onpl += cpu_elapsed;
+                onpl_subsets += comm;
+                onpl_mod += mod;
+            }
+            free(vPLM);
+            //            std::cout<< "[" << k << "] ******************* Successfully Done ************************ " << std::endl;
+        }
+        et_onpl = et_onpl/NUM_RUN;
+        onpl_subsets = onpl_subsets/NUM_RUN;
+        onpl_mod = onpl_mod/NUM_RUN;
+        std::cout << "Total CPU time without refinement: " << et_onpl << std::endl;
+        std::cout << "number of clusters: " << onpl_subsets << std::endl;
+        std::cout << "modularity: " << onpl_mod << std::endl;
+
+    } else if (version == 2) {
+        std::cout << "***** Vectorized Block Version *****" << std::endl;
+        for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
+            Graph gCopy = G;
+            OVPL plm(gCopy, refine, 1.0, "balanced", _iterations);
+            std::string move_phase_log_file = movephase_folder + "/move_phase_log_" + ppn + "_" + _graphName + ".csv";
+            std::string first_move_phase_log_file =
+                first_movephase_folder + "/first_move_phase_log_" + ppn + "_" + _graphName + ".csv";
+            std::string vlm_details_log_file =
+                vlm_details_folder + "/vlm_details_log_" + ppn + "_" + _graphName + ".csv";
+            std::string plm_details_log = plm_details_folder + "/plm_details_log_" + ppn + "_" + _graphName + ".csv";
+            plm.setupCSVFile(move_phase_log_file, first_move_phase_log_file, vlm_details_log_file, plm_details_log);
+#if POWER_LOG
+            //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
+            rapl_sysfs_init();
+            rapl_sysfs_before();
+#endif
+            //            clock_gettime(CLOCK_MONOTONIC, &start);
+            clock_gettime(CLOCK_REALTIME, &start);
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
+            plm.run();
+            if (k>=SKIP_RUN) {
+#if POWER_LOG
+                rapl_sysfs_after();
+                // Results
+                rapl_sysfs_results("OVPL", _graphName, std::stoi(ppn), 1, architecture);
+#endif
+                //                clock_gettime(CLOCK_MONOTONIC, &end);
+                clock_gettime(CLOCK_REALTIME, &end);
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_end);
+                long seconds = end.tv_sec - start.tv_sec;
+                long nanoseconds = end.tv_nsec - start.tv_nsec;
+                double elapsed = seconds + nanoseconds*1e-9;
+                seconds = cpu_end.tv_sec - cpu_start.tv_sec;
+                nanoseconds = cpu_end.tv_nsec - cpu_start.tv_nsec;
+                double cpu_elapsed = seconds + nanoseconds*1e-9;
+
+                Partition zeta = plm.getPartition();
+                count comm = zeta.numberOfSubsets();
+                double mod = modularity.getQuality(zeta, G);
+                auto times = plm.getTiming();
+                double move_time = 0, coarsen_time = 0, refine_time = 0;
+                for (double t : times["move"]) {
+                    move_time += t;
+                }
+                for (double t : times["coarsen"]) {
+                    coarsen_time += t;
+                }
+                for (double t : times["refine"]) {
+                    refine_time += t;
+                }
+
+//                auto c_counts = plm.getCacheCount();
+                long long cache_count = 0;
+                /*for(auto c : c_counts["move"]){
+                    cache_count += c;
+                }*/
+
+#if OVERALL_LOG
+#ifdef L1D_CACHE_MISS_COUNT
+                graph_log << _graphName << "," << "OVPL" << "," << z << "," << edges << ","
+                          << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
+                          << (_iterations) << "," << times["move"][0] << "," << move_time << ","
+                          << coarsen_time << "," << refine_time << "," << ppn << "," << "L1D"
+                          << "," << cache_count << "," << refine << std::endl;
+#else
+                graph_log << _graphName << "," << "OVPL" << "," << z << "," << edges << ","
+                          << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
+                          << (_iterations) << "," << times["move"][0] << "," << move_time << ","
+                          << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"
+                          << "," << cache_count << "," << refine << std::endl;
+#endif
+#endif
+                et_ovpl += cpu_elapsed;
+                ovpl_subsets += comm;
+                ovpl_mod += mod;
+            }
+            //            std::cout<< "[" << k << "] ******************* Successfully Done ************************ " << std::endl;
+        }
+        et_ovpl = et_ovpl/NUM_RUN;
+        ovpl_subsets = ovpl_subsets/NUM_RUN;
+        ovpl_mod = ovpl_mod/NUM_RUN;
+        std::cout << "Total CPU time without refinement: " << et_ovpl << std::endl;
+        std::cout << "number of clusters: " << ovpl_subsets << std::endl;
+        std::cout << "modularity: " << ovpl_mod << std::endl;
+
+    } else if(version == 3) {
+        std::cout << "***** Modified Legacy Version *****" << std::endl;
+        for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
+            Graph gCopy = G;
+            MPLM modifiedPLM(gCopy, refine, 1.0, "balanced", _iterations);
+            std::string mplm_move_details_file =
+                plm_details_folder + "/mplm_move_log_" + ppn + "_" + _graphName + ".csv";
+            modifiedPLM.setupMoveDetailsCSVFile(mplm_move_details_file);
+            modifiedPLM.initMPLM();
+#if POWER_LOG
+            //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
+            rapl_sysfs_init();
+            rapl_sysfs_before();
+#endif
+            //            clock_gettime(CLOCK_MONOTONIC, &start_modified);
+            clock_gettime(CLOCK_REALTIME, &start);
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
+            modifiedPLM.run();
+            if (k>=SKIP_RUN) {
+                //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
+                clock_gettime(CLOCK_REALTIME, &end);
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_end);
+                long seconds = end.tv_sec - start.tv_sec;
+                long nanoseconds = end.tv_nsec - start.tv_nsec;
+                double elapsed = seconds + nanoseconds*1e-9;
+                seconds = cpu_end.tv_sec - cpu_start.tv_sec;
+                nanoseconds = cpu_end.tv_nsec - cpu_start.tv_nsec;
+                double cpu_elapsed = seconds + nanoseconds*1e-9;
+#if POWER_LOG
+                rapl_sysfs_after();
+                // Results
+                rapl_sysfs_results("MPLM", _graphName, std::stoi(ppn), 1, architecture);
+#endif
+
+                Partition s_zeta = modifiedPLM.getPartition();
+                count comm = s_zeta.numberOfSubsets();
+                double mod = modularity.getQuality(s_zeta, G);
+                auto times = modifiedPLM.getTiming();
+                double move_time = 0, coarsen_time = 0, refine_time = 0;
+                for (double t : times["move"]) {
+                    move_time += t;
+                }
+                for (double t : times["coarsen"]) {
+                    coarsen_time += t;
+                }
+                for (double t : times["refine"]) {
+                    refine_time += t;
+                }
+
+//                auto c_counts = modifiedPLM.getCacheCount();
+                long long cache_count = 0;
+                /*for(auto c : c_counts["move"]){
+                    cache_count += c;
+                }*/
+#if OVERALL_LOG
+#ifdef L1D_CACHE_MISS_COUNT
+                graph_log << _graphName << "," << "MPLM" << "," << z << "," << edges << ","
+                          << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
+                          << (_iterations) << "," << times["move"][0] << "," << move_time << ","
+                          << coarsen_time << "," << refine_time << "," << ppn << "," << "L1D"
+                          << "," << cache_count << "," << refine << std::endl;
+#else
+                graph_log << _graphName << "," << "MPLM" << "," << z << "," << edges << ","
+                          << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
+                          << (_iterations) << "," << times["move"][0] << "," << move_time << ","
+                          << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"
+                          << "," << cache_count << "," << refine << std::endl;
+#endif
+#endif
+                et_mplm += cpu_elapsed;
+                mplm_subsets += comm;
+                mplm_mod += mod;
+            }
+            //            std::cout<< "[" << k << "] ******************* Successfully Done ************************ " << std::endl;
+        }
+        et_mplm = et_mplm/NUM_RUN;
+        mplm_subsets = mplm_subsets/NUM_RUN;
+        mplm_mod = mplm_mod/NUM_RUN;
+        std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
+        std::cout << "number of clusters: " << mplm_subsets << std::endl;
+        std::cout << "modularity: " << mplm_mod << std::endl;
+    }
+
+#if OVERALL_LOG
+    graph_log.close();
+#endif
+
+    return 0;
+
+    /*
     ::testing::InitGoogleTest(&argc, argv);
     Options options;
     if (!options.parse(argc, argv)) {
@@ -101,5 +595,5 @@ int main(int argc, char *argv[]) {
 
     INFO("=== starting unit tests ===");
 
-    return RUN_ALL_TESTS();
+    return RUN_ALL_TESTS();*/
 }

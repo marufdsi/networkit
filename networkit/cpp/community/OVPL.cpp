@@ -217,11 +217,11 @@ namespace NetworKit {
     }
 
 
-    long OVPL::perf_event_open2(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags){
+   /* long OVPL::perf_event_open2(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags){
         int ret;
         ret = syscall(__NR_perf_event_open, hw_event, pid, cpu, group_fd, flags);
         return ret;
-    }
+    }*/
     void OVPL::run() {
 //        std::cout<<"Run method Start"<<std::endl;
 //        maxIter = 32;
@@ -230,9 +230,9 @@ namespace NetworKit {
         Aux::SignalHandler handler;
         Modularity modularity;
         /// perf event attributes
-        struct perf_event_attr pe;
-        long long cache_miss_count;
-        int fd;
+//        struct perf_event_attr pe;
+//        long long cache_miss_count;
+//        int fd;
         ///
         DEBUG("calling run method on " , G.toString());
 
@@ -544,7 +544,7 @@ namespace NetworKit {
         }
 
         /// Initialize perf events
-        memset(&pe, 0, sizeof(struct perf_event_attr));
+        /*memset(&pe, 0, sizeof(struct perf_event_attr));
         pe.type = PERF_TYPE_HW_CACHE;
         pe.size = sizeof(struct perf_event_attr);
 #ifdef L1D_CACHE_MISS_COUNT
@@ -565,7 +565,7 @@ namespace NetworKit {
         if (fd == -1) {
             fprintf(stderr, "Error opening leader %llx\n", pe.config);
             exit(EXIT_FAILURE);
-        }
+        }*/
         ///
 
         // try to improve modularity by moving a node to neighboring clusters
@@ -1021,15 +1021,15 @@ namespace NetworKit {
         clock_gettime(CLOCK_REALTIME, &c_start);
         //
         /// Reset Perf
-        ioctl(fd, PERF_EVENT_IOC_RESET, 0);
-        ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+//        ioctl(fd, PERF_EVENT_IOC_RESET, 0);
+//        ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
         ///
         movePhase();
         /// Read cache miss count
-        ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
-        read(fd, &cache_miss_count, sizeof(long long));
-        cache_info["move"].push_back(cache_miss_count);
-        close(fd);
+//        ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
+//        read(fd, &cache_miss_count, sizeof(long long));
+//        cache_info["move"].push_back(cache_miss_count);
+//        close(fd);
         ///
         //
         clock_gettime(CLOCK_REALTIME, &c_end);

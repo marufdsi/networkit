@@ -18,7 +18,7 @@ namespace NetworKit {
  * @ingroup community
  * Parallel Louvain Method - a multi-level modularity maximizer.
  */
-class MPLM: public NetworKit::CommunityDetectionAlgorithm {
+class MPLM final: public CommunityDetectionAlgorithm {
 
 /*private:
     int move_iter = 0;
@@ -45,7 +45,7 @@ public:
 
 	void initMPLM();
 
-    long perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags);
+//    long perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags);
 	/**
 	 * Get string representation.
 	 *

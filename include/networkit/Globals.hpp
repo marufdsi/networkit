@@ -26,10 +26,12 @@ using omp_index = index;
 using count = uint64_t;    ///< more expressive name for an integer quantity
 using node = index;        ///< node indices are 0-based
 using edgeweight = double; ///< edge weight type
+using f_weight = float; ///< edge weight type
 using edgeid = index;      ///< edge id
 
 constexpr index none = std::numeric_limits<index>::max(); ///< value for not existing nodes/edges
 constexpr edgeweight defaultEdgeWeight = 1.0;
+constexpr f_weight fdefaultEdgeWeight = 1.0;
 constexpr edgeweight nullWeight = 0.0;
 
 using coordinate = double;

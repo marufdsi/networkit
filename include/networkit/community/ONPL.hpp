@@ -18,7 +18,7 @@ namespace NetworKit {
  * @ingroup community
  * Parallel Louvain Method - a multi-level modularity maximizer.
  */
-class ONPL: public NetworKit::CommunityDetectionAlgorithm {
+class ONPL final: public CommunityDetectionAlgorithm {
 
 /*private:
     int m_iter = 0;
@@ -44,7 +44,7 @@ public:
 	ONPL(const Graph& G, bool refine=false, f_weight gamma = 1.0, std::string par="balanced", count maxIter=32, bool fullVec = false, bool turbo = true, bool recurse = true);
 	ONPL(const Graph& G, const ONPL& other);
     void initONPL();
-    long perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags);
+//    long perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags);
 
 	/**
 	 * Get string representation.
