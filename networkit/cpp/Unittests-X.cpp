@@ -26,6 +26,7 @@
 #include <networkit/community/ONPL.hpp>
 #include <networkit/community/OVPL.hpp>
 #include <networkit/community/MPLM.hpp>
+#include <networkit/community/OPLM.hpp>
 #include <networkit/community/ParallelAgglomerativeClusterer.hpp>
 #include <networkit/community/Modularity.hpp>
 #include <networkit/community/EdgeCut.hpp>
@@ -137,6 +138,11 @@ struct Options {
         return true;
     }
 };
+
+std::string movephase_folder = "MovePhaseLog";
+std::string first_movephase_folder = "FirstMovePhaseLog";
+std::string vlm_details_folder = "VLMDetailsLog";
+std::string plm_details_folder = "PLMDetailsLog";
 
 int main(int argc, char *argv[]) {
     std::cout << "*** NetworKit Unit Tests ***\n";
@@ -297,7 +303,7 @@ int main(int argc, char *argv[]) {
             ONPL *vPLM = new ONPL(gCopy, refine, 1.0, "balanced", _iterations, fullVec);
             std::string vplm_conflict_file = plm_details_folder + "/vplm_conflict_log_" + ppn + "_" + _graphName + ".csv";
             vPLM->setupCSVFile(vplm_conflict_file);
-            vPLM->initVPLM();
+            vPLM->initONPL();
 #if POWER_LOG
             //            vPLM->setupPowerFile(_graphName, std::stoi(ppn));
             std::cout<<"Setup energy" << std::endl;
