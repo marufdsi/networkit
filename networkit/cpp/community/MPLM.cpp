@@ -418,7 +418,7 @@ namespace NetworKit {
             clock_gettime(CLOCK_REALTIME, &c_start);
 //            timer.start();
             //
-            std::pair<Graph, std::vector<node>> coarsened = coarsen(G,
+            std::pair<Graph, std::vector<node>> coarsened = coarsen(*G,
                                                                     zeta);    // coarsen graph according to communitites
             //
             clock_gettime(CLOCK_REALTIME, &c_end);
@@ -502,7 +502,7 @@ namespace NetworKit {
     }
 
     std::pair<Graph, std::vector<node> > MPLM::coarsen(const Graph &G, const Partition &zeta) {
-        ParallelPartitionCoarsening parCoarsening(*G, zeta);
+        ParallelPartitionCoarsening parCoarsening(G, zeta);
         parCoarsening.run();
         return {parCoarsening.getCoarseGraph(), parCoarsening.getFineToCoarseNodeMapping()};
     }
