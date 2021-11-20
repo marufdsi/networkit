@@ -115,7 +115,7 @@ namespace NetworKit {
                         turboAffinity[tid][C] = 0;
                         neigh_comm[tid].push_back(C);
                     }
-                    turboAffinity[tid][C] += G->isWeighted() ? G->getOutEdgeWeight(u, i) : fdefaultEdgeWeight;
+                    turboAffinity[tid][C] += G->isWeighted() ? G->getOutEdgeWeight<true>(u, i) : fdefaultEdgeWeight;
                 }
             }
             /*G->forNeighborsOf(u, [&](node v, f_weight weight) {

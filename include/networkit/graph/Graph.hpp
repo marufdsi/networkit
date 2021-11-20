@@ -163,16 +163,6 @@ class Graph final {
     f_weight computeWeightedDegree(node u, bool inDegree = false,
                                      bool countSelfLoopsTwice = false) const;
 
-    /**
-     * Returns the edge weight of the outgoing edge of index i in the outgoing
-     * edges of node u
-     * @param u The node
-     * @param i The index
-     * @return The weight of the outgoing edge or defaultEdgeWeight if the graph
-     * is unweighted
-     */
-    template <bool hasWeights>
-    inline f_weight getOutEdgeWeight(node u, index i) const;
 
     /**
      * Returns the edge weight of the incoming edge of index i in the incoming
@@ -479,6 +469,16 @@ public:
         node u;
 
     public:
+        /**
+     * Returns the edge weight of the outgoing edge of index i in the outgoing
+     * edges of node u
+     * @param u The node
+     * @param i The index
+     * @return The weight of the outgoing edge or defaultEdgeWeight if the graph
+     * is unweighted
+         */
+        template <bool hasWeights>
+        inline f_weight getOutEdgeWeight(node u, index i) const;
         // The value type of the nodes (i.e. nodes). Returned by
         // operator*().
         using value_type = node;
