@@ -84,14 +84,14 @@ Graph::Graph(const Graph &G, bool weighted, bool directed)
                     inEdgeWeights.resize(z);
                     for (node u = 0; u < z; u++) {
                         inEdgeWeights[u] =
-                            std::vector<edgeweight>(G.inEdges[u].size(), defaultEdgeWeight);
+                            std::vector<f_weight>(G.inEdges[u].size(), defaultEdgeWeight);
                     }
                 }
 
                 outEdgeWeights.resize(z);
                 for (node u = 0; u < z; u++) {
                     outEdgeWeights[u] =
-                        std::vector<edgeweight>(outEdges[u].size(), defaultEdgeWeight);
+                        std::vector<f_weight>(outEdges[u].size(), defaultEdgeWeight);
                 }
             }
         }
@@ -123,7 +123,7 @@ Graph::Graph(const Graph &G, bool weighted, bool directed)
                 outEdgeWeights.resize(z);
                 for (node u = 0; u < z; u++) {
                     outEdgeWeights[u] =
-                        std::vector<edgeweight>(outEdges[u].size(), defaultEdgeWeight);
+                        std::vector<f_weight>(outEdges[u].size(), defaultEdgeWeight);
                 }
             }
         }
@@ -142,12 +142,12 @@ Graph::Graph(const Graph &G, bool weighted, bool directed)
                 inEdgeWeights.resize(z);
                 for (node u = 0; u < z; u++) {
                     inEdgeWeights[u] =
-                        std::vector<edgeweight>(inEdges[u].size(), defaultEdgeWeight);
+                        std::vector<f_weight>(inEdges[u].size(), defaultEdgeWeight);
                 }
                 outEdgeWeights.resize(z);
                 for (node u = 0; u < z; u++) {
                     outEdgeWeights[u] =
-                        std::vector<edgeweight>(outEdges[u].size(), defaultEdgeWeight);
+                        std::vector<f_weight>(outEdges[u].size(), defaultEdgeWeight);
                 }
             }
         }
@@ -378,7 +378,7 @@ void Graph::compactEdges() {
 
 void Graph::sortEdges() {
     std::vector<std::vector<node>> targetAdjacencies(upperNodeIdBound());
-    std::vector<std::vector<edgeweight>> targetWeight;
+    std::vector<std::vector<f_weight>> targetWeight;
     std::vector<std::vector<edgeid>> targetEdgeIds;
 
     if (isWeighted()) {
@@ -392,7 +392,7 @@ void Graph::sortEdges() {
 
     forNodes([&](node u) { targetAdjacencies[u].reserve(degree(u)); });
 
-    auto assignToTarget = [&](node u, node v, edgeweight w, edgeid eid) {
+    auto assignToTarget = [&](node u, node v, f_weight w, edgeid eid) {
         targetAdjacencies[v].push_back(u);
         if (isWeighted()) {
             targetWeight[v].push_back(w);
@@ -437,10 +437,10 @@ void Graph::sortEdges() {
     }
 }
 
-edgeweight Graph::computeWeightedDegree(node u, bool inDegree, bool countSelfLoopsTwice) const {
+f_weight Graph::computeWeightedDegree(node u, bool inDegree, bool countSelfLoopsTwice) const {
     if (weighted) {
-        edgeweight sum = 0.0;
-        auto sumWeights = [&](node v, edgeweight w) {
+        f_weight sum = 0.0;
+        auto sumWeights = [&](node v, f_weight w) {
             sum += (countSelfLoopsTwice && u == v) ? 2. * w : w;
         };
         if (inDegree) {
@@ -462,7 +462,7 @@ edgeweight Graph::computeWeightedDegree(node u, bool inDegree, bool countSelfLoo
         }
     }
 
-    return static_cast<edgeweight>(sum);
+    return static_cast<f_weight>(sum);
 }
 
 /** NODE MODIFIERS **/
@@ -549,17 +549,17 @@ void Graph::restoreNode(node v) {
 
 /** NODE PROPERTIES **/
 
-edgeweight Graph::weightedDegree(node u, bool countSelfLoopsTwice) const {
+f_weight Graph::weightedDegree(node u, bool countSelfLoopsTwice) const {
     return computeWeightedDegree(u, false, countSelfLoopsTwice);
 }
 
-edgeweight Graph::weightedDegreeIn(node u, bool countSelfLoopsTwice) const {
+f_weight Graph::weightedDegreeIn(node u, bool countSelfLoopsTwice) const {
     return computeWeightedDegree(u, true, countSelfLoopsTwice);
 }
 
 /** EDGE MODIFIERS **/
 
-void Graph::addEdge(node u, node v, edgeweight ew) {
+void Graph::addEdge(node u, node v, f_weight ew) {
     assert(u < z);
     assert(exists[u]);
     assert(v < z);
@@ -608,7 +608,7 @@ void Graph::addEdge(node u, node v, edgeweight ew) {
         ++storedNumberOfSelfLoops;
     }
 }
-void Graph::addPartialEdge(Unsafe, node u, node v, edgeweight ew, uint64_t index) {
+void Graph::addPartialEdge(Unsafe, node u, node v, f_weight ew, uint64_t index) {
     assert(u < z);
     assert(exists[u]);
     assert(v < z);
@@ -624,7 +624,7 @@ void Graph::addPartialEdge(Unsafe, node u, node v, edgeweight ew, uint64_t index
         outEdgeWeights[u].push_back(ew);
     }
 }
-void Graph::addPartialOutEdge(Unsafe, node u, node v, edgeweight ew, uint64_t index) {
+void Graph::addPartialOutEdge(Unsafe, node u, node v, f_weight ew, uint64_t index) {
     assert(u < z);
     assert(exists[u]);
     assert(v < z);
@@ -640,7 +640,7 @@ void Graph::addPartialOutEdge(Unsafe, node u, node v, edgeweight ew, uint64_t in
         outEdgeWeights[u].push_back(ew);
     }
 }
-void Graph::addPartialInEdge(Unsafe, node u, node v, edgeweight ew, uint64_t index) {
+void Graph::addPartialInEdge(Unsafe, node u, node v, f_weight ew, uint64_t index) {
     assert(u < z);
     assert(exists[u]);
     assert(v < z);
@@ -684,7 +684,7 @@ void Graph::removeEdge(node u, node v) {
 
     erase<node>(u, vi, outEdges);
     if (weighted) {
-        erase<edgeweight>(u, vi, outEdgeWeights);
+        erase<f_weight>(u, vi, outEdgeWeights);
     }
     if (edgesIndexed) {
         erase<edgeid>(u, vi, outEdgeIds);
@@ -695,7 +695,7 @@ void Graph::removeEdge(node u, node v) {
 
         erase<node>(v, ui, inEdges);
         if (weighted) {
-            erase<edgeweight>(v, ui, inEdgeWeights);
+            erase<f_weight>(v, ui, inEdgeWeights);
         }
         if (edgesIndexed) {
             erase<edgeid>(v, ui, inEdgeIds);
@@ -704,7 +704,7 @@ void Graph::removeEdge(node u, node v) {
         // undirected, not self-loop
         erase<node>(v, ui, outEdges);
         if (weighted) {
-            erase<edgeweight>(v, ui, outEdgeWeights);
+            erase<f_weight>(v, ui, outEdgeWeights);
         }
         if (edgesIndexed) {
             erase<edgeid>(v, ui, outEdgeIds);
@@ -814,7 +814,7 @@ bool Graph::hasEdge(node u, node v) const noexcept {
 
 /** EDGE ATTRIBUTES **/
 
-edgeweight Graph::weight(node u, node v) const {
+f_weight Graph::weight(node u, node v) const {
     index vi = indexInOutEdgeArray(u, v);
     if (vi == none) {
         return nullWeight;
@@ -823,7 +823,7 @@ edgeweight Graph::weight(node u, node v) const {
     }
 }
 
-void Graph::setWeight(node u, node v, edgeweight ew) {
+void Graph::setWeight(node u, node v, f_weight ew) {
     if (!weighted) {
         throw std::runtime_error("Cannot set edge weight in unweighted graph.");
     }
@@ -846,7 +846,7 @@ void Graph::setWeight(node u, node v, edgeweight ew) {
     }
 }
 
-void Graph::increaseWeight(node u, node v, edgeweight ew) {
+void Graph::increaseWeight(node u, node v, f_weight ew) {
     if (!weighted) {
         throw std::runtime_error("Cannot increase edge weight in unweighted graph.");
     }
@@ -868,16 +868,16 @@ void Graph::increaseWeight(node u, node v, edgeweight ew) {
     }
 }
 
-void Graph::setWeightAtIthNeighbor(Unsafe, node u, index i, edgeweight ew) {
+void Graph::setWeightAtIthNeighbor(Unsafe, node u, index i, f_weight ew) {
     outEdgeWeights[u][i] = ew;
 }
 
 /** SUMS **/
 
-edgeweight Graph::totalEdgeWeight() const noexcept {
+f_weight Graph::totalEdgeWeight() const noexcept {
     if (weighted) {
-        edgeweight sum = 0.0;
-        forEdges([&](node, node, edgeweight ew) { sum += ew; });
+        f_weight sum = 0.0;
+        forEdges([&](node, node, f_weight ew) { sum += ew; });
         return sum;
     } else {
         return numberOfEdges() * defaultEdgeWeight;
