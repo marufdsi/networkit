@@ -28,6 +28,10 @@ networkit_add_module(community
     OverlappingCommunityDetectionAlgorithm.cpp
     PLM.cpp
     PLP.cpp
+	ONPL.cpp
+	OVPL.cpp
+	MPLM.cpp
+	OPLM.cpp
     ParallelAgglomerativeClusterer.cpp
     PartitionFragmentation.cpp
     PartitionHubDominance.cpp
