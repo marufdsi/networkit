@@ -25,7 +25,7 @@ using omp_index = index;
 
 using count = uint64_t;    ///< more expressive name for an integer quantity
 using node = index;        ///< node indices are 0-based
-using edgeweight = float; ///< edge weight type
+using edgeweight = double; ///< edge weight type
 using f_weight = float; ///< edge weight type
 using edgeid = index;      ///< edge id
 

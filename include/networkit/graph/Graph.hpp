@@ -45,18 +45,18 @@ struct Edge {
  * initializer list syntax.
  */
 struct WeightedEdge : Edge {
-    edgeweight weight;
+    f_weight weight;
 
     // Needed by cython
-    WeightedEdge() : Edge(), weight(std::numeric_limits<edgeweight>::max()) {}
+    WeightedEdge() : Edge(), weight(std::numeric_limits<f_weight>::max()) {}
 
-    WeightedEdge(node u, node v, edgeweight w) : Edge(u, v), weight(w) {}
+    WeightedEdge(node u, node v, f_weight w) : Edge(u, v), weight(w) {}
 };
 
 struct WeightedEdgeWithId : WeightedEdge {
     edgeid eid;
 
-    WeightedEdgeWithId(node u, node v, edgeweight w, edgeid eid)
+    WeightedEdgeWithId(node u, node v, f_weight w, edgeid eid)
         : WeightedEdge(u, v, w), eid(eid) {}
 };
 
@@ -130,7 +130,7 @@ class Graph final {
     std::vector<std::vector<node>> outEdges;
 
     //!< only used for directed graphs, same schema as inEdges
-    std::vector<std::vector<edgeweight>> inEdgeWeights;
+    std::vector<std::vector<f_weight>> inEdgeWeights;
     //!< same schema (and same order!) as outEdges
     std::vector<std::vector<f_weight>> outEdgeWeights;
 
@@ -160,7 +160,7 @@ class Graph final {
      *
      * @return Weighted in/out degree of node @a u.
      */
-    edgeweight computeWeightedDegree(node u, bool inDegree = false,
+    f_weight computeWeightedDegree(node u, bool inDegree = false,
                                      bool countSelfLoopsTwice = false) const;
 
     /**
@@ -172,7 +172,7 @@ class Graph final {
      * is unweighted
      */
     template <bool hasWeights>
-    inline edgeweight getOutEdgeWeight(node u, index i) const;
+    inline f_weight getOutEdgeWeight(node u, index i) const;
 
     /**
      * Returns the edge weight of the incoming edge of index i in the incoming
@@ -183,7 +183,7 @@ class Graph final {
      * @return The weight of the incoming edge
      */
     template <bool hasWeights>
-    inline edgeweight getInEdgeWeight(node u, index i) const;
+    inline f_weight getInEdgeWeight(node u, index i) const;
 
     /**
      * Returns the edge id of the edge of index i in the outgoing edges of node
@@ -310,8 +310,8 @@ class Graph final {
 
     /**
      * Calls the given function f if its fourth argument is of the type edgeid
-     * and third of type edgeweight Note that the decltype check is not enough
-     * as edgeweight can be casted to node and we want to assure that .
+     * and third of type f_weight Note that the decltype check is not enough
+     * as f_weight can be casted to node and we want to assure that .
      */
     template <class F,
               typename std::enable_if<
@@ -325,10 +325,22 @@ class Graph final {
         return f(u, v, ew, id);
     }
 
+    template <class F,
+              typename std::enable_if<
+                  (Aux::FunctionTraits<F>::arity >= 3)
+                  && std::is_same<f_weight,
+                                  typename Aux::FunctionTraits<F>::template arg<2>::type>::value
+                  && std::is_same<edgeid, typename Aux::FunctionTraits<F>::template arg<3>::type>::
+                      value>::type * = (void *)0>
+    auto edgeLambda(F &f, node u, node v, f_weight ew, edgeid id) const
+        -> decltype(f(u, v, ew, id)) {
+        return f(u, v, ew, id);
+    }
+
     /**
      * Calls the given function f if its third argument is of the type edgeid,
      * discards the edge weight Note that the decltype check is not enough as
-     * edgeweight can be casted to node.
+     * f_weight can be casted to node.
      */
     template <
         class F,
@@ -343,10 +355,24 @@ class Graph final {
         return f(u, v, id);
     }
 
+    template <
+        class F,
+        typename std::enable_if<
+            (Aux::FunctionTraits<F>::arity >= 2)
+            && std::is_same<edgeid, typename Aux::FunctionTraits<F>::template arg<2>::type>::value
+            && std::is_same<node, typename Aux::FunctionTraits<F>::template arg<1>::type>::
+                value /* prevent f(v, weight, eid)
+                       */
+            >::type * = (void *)0>
+    auto edgeLambda(F &f, node u, node v, f_weight, edgeid id) const -> decltype(f(u, v, id)) {
+        return f(u, v, id);
+    }
+
+
     /**
-     * Calls the given function f if its third argument is of type edgeweight,
+     * Calls the given function f if its third argument is of type f_weight,
      * discards the edge id Note that the decltype check is not enough as node
-     * can be casted to edgeweight.
+     * can be casted to f_weight.
      */
     template <class F,
               typename std::enable_if<
@@ -357,11 +383,20 @@ class Graph final {
         -> decltype(f(u, v, ew)) {
         return f(u, v, ew);
     }
+    template <class F,
+              typename std::enable_if<
+                  (Aux::FunctionTraits<F>::arity >= 2)
+                  && std::is_same<f_weight, typename Aux::FunctionTraits<F>::template arg<
+                                                2>::type>::value>::type * = (void *)0>
+    auto edgeLambda(F &f, node u, node v, f_weight ew, edgeid /*id*/) const
+        -> decltype(f(u, v, ew)) {
+        return f(u, v, ew);
+    }
 
     /**
      * Calls the given function f if it has only two arguments and the second
      * argument is of type node, discards edge weight and id Note that the
-     * decltype check is not enough as edgeweight can be casted to node.
+     * decltype check is not enough as f_weight can be casted to node.
      */
     template <class F, typename std::enable_if<
                            (Aux::FunctionTraits<F>::arity >= 1)
@@ -371,11 +406,19 @@ class Graph final {
         -> decltype(f(u, v)) {
         return f(u, v);
     }
+    template <class F, typename std::enable_if<
+                           (Aux::FunctionTraits<F>::arity >= 1)
+                           && std::is_same<node, typename Aux::FunctionTraits<F>::template arg<
+                                                     1>::type>::value>::type * = (void *)0>
+    auto edgeLambda(F &f, node u, node v, f_weight /*ew*/, edgeid /*id*/) const
+        -> decltype(f(u, v)) {
+        return f(u, v);
+    }
 
     /**
      * Calls the given function f if it has only two arguments and the second
-     * argument is of type edgeweight, discards the first node and the edge id
-     * Note that the decltype check is not enough as edgeweight can be casted to
+     * argument is of type f_weight, discards the first node and the edge id
+     * Note that the decltype check is not enough as f_weight can be casted to
      * node.
      */
     template <class F,
@@ -387,12 +430,26 @@ class Graph final {
         return f(v, ew);
     }
 
+
+    template <class F,
+              typename std::enable_if<
+                  (Aux::FunctionTraits<F>::arity >= 1)
+                  && std::is_same<f_weight, typename Aux::FunctionTraits<F>::template arg<
+                                                  1>::type>::value>::type * = (void *)0>
+    auto edgeLambda(F &f, node, node v, f_weight ew, edgeid /*id*/) const -> decltype(f(v, ew)) {
+        return f(v, ew);
+    }
+
     /**
      * Calls the given function f if it has only one argument, discards the
      * first node id, the edge weight and the edge id
      */
     template <class F, void * = (void *)0>
     auto edgeLambda(F &f, node, node v, edgeweight, edgeid) const -> decltype(f(v)) {
+        return f(v);
+    }
+    template <class F, void * = (void *)0>
+    auto edgeLambda(F &f, node, node v, f_weight, edgeid) const -> decltype(f(v)) {
         return f(v);
     }
 
@@ -836,17 +893,17 @@ public:
 
     /**
      * Class to iterate over the in/out neighbors of a node including the edge
-     * weights. Values are std::pair<node, edgeweight>.
+     * weights. Values are std::pair<node, f_weight>.
      */
     class NeighborWeightIterator {
 
         std::vector<node>::const_iterator nIter;
-        std::vector<edgeweight>::const_iterator wIter;
+        std::vector<f_weight>::const_iterator wIter;
 
     public:
         // The value type of the neighbors (i.e. nodes). Returned by
         // operator*().
-        using value_type = std::pair<node, edgeweight>;
+        using value_type = std::pair<node, f_weight>;
 
         // Reference to the value_type, required by STL.
         using reference = value_type &;
@@ -865,7 +922,7 @@ public:
         using self = NeighborWeightIterator;
 
         NeighborWeightIterator(std::vector<node>::const_iterator nodesIter,
-                               std::vector<edgeweight>::const_iterator weightIter)
+                               std::vector<f_weight>::const_iterator weightIter)
             : nIter(nodesIter), wIter(weightIter) {}
 
         /**
@@ -904,7 +961,7 @@ public:
 
         bool operator!=(const NeighborWeightIterator &rhs) const { return !(*this == rhs); }
 
-        std::pair<node, edgeweight> operator*() const { return std::make_pair(*nIter, *wIter); }
+        std::pair<node, f_weight> operator*() const { return std::make_pair(*nIter, *wIter); }
     };
 
     /**
@@ -940,7 +997,7 @@ public:
     /**
      * Wrapper class to iterate over a range of the neighbors of a node
      * including the edge weights within a for loop.
-     * Values are std::pair<node, edgeweight>.
+     * Values are std::pair<node, f_weight>.
      */
     template <bool InEdges = false>
     class NeighborWeightRange {
@@ -1280,7 +1337,7 @@ public:
      *
      * @return Weighted degree of @a u.
      */
-    edgeweight weightedDegree(node u, bool countSelfLoopsTwice = false) const;
+    f_weight weightedDegree(node u, bool countSelfLoopsTwice = false) const;
 
     /**
      * Returns the weighted in-degree of @a u.
@@ -1290,7 +1347,7 @@ public:
      *
      * @return Weighted in-degree of @a v.
      */
-    edgeweight weightedDegreeIn(node u, bool countSelfLoopsTwice = false) const;
+    f_weight weightedDegreeIn(node u, bool countSelfLoopsTwice = false) const;
 
     /* EDGE MODIFIERS */
 
@@ -1303,7 +1360,7 @@ public:
      * @param v Endpoint of edge.
      * @param weight Optional edge weight.
      */
-    void addEdge(node u, node v, edgeweight ew = defaultEdgeWeight);
+    void addEdge(node u, node v, f_weight ew = defaultEdgeWeight);
 
     /**
      * Insert an edge between the nodes @a u and @a v. Unline the addEdge function, this function
@@ -1316,7 +1373,7 @@ public:
      * @param ew Optional edge weight.
      * @param index Optional node index.
      */
-    void addPartialEdge(Unsafe, node u, node v, edgeweight ew = defaultEdgeWeight,
+    void addPartialEdge(Unsafe, node u, node v, f_weight ew = defaultEdgeWeight,
                         uint64_t index = 0);
 
     /**
@@ -1329,7 +1386,7 @@ public:
      * @param ew Optional edge weight.
      * @param index Optional node index.
      */
-    void addPartialInEdge(Unsafe, node u, node v, edgeweight ew = defaultEdgeWeight,
+    void addPartialInEdge(Unsafe, node u, node v, f_weight ew = defaultEdgeWeight,
                           uint64_t index = 0);
 
     /**
@@ -1342,7 +1399,7 @@ public:
      * @param ew Optional edge weight.
      * @param index Optional node index.
      */
-    void addPartialOutEdge(Unsafe, node u, node v, edgeweight ew = defaultEdgeWeight,
+    void addPartialOutEdge(Unsafe, node u, node v, f_weight ew = defaultEdgeWeight,
                            uint64_t index = 0);
 
     /**
@@ -1490,7 +1547,7 @@ public:
      * @param v Endpoint of edge.
      * @return Edge weight of edge {@a u,@a v} or 0 if edge does not exist.
      */
-    edgeweight weight(node u, node v) const;
+    f_weight weight(node u, node v) const;
 
     /**
      * Set the weight of an edge. If the edge does not exist,
@@ -1500,7 +1557,7 @@ public:
      * @param[in]	v	endpoint of edge
      * @param[in]	weight	edge weight
      */
-    void setWeight(node u, node v, edgeweight ew);
+    void setWeight(node u, node v, f_weight ew);
 
     /**
      * Set the weight to the i-th neighbour of u.
@@ -1509,7 +1566,7 @@ public:
      * @param[in]	i	index of the nexight
      * @param[in]	weight	edge weight
      */
-    void setWeightAtIthNeighbor(Unsafe, node u, index i, edgeweight ew);
+    void setWeightAtIthNeighbor(Unsafe, node u, index i, f_weight ew);
 
     /**
      * Increase the weight of an edge. If the edge does not exist,
@@ -1519,7 +1576,7 @@ public:
      * @param[in]	v	endpoint of edge
      * @param[in]	weight	edge weight
      */
-    void increaseWeight(node u, node v, edgeweight ew);
+    void increaseWeight(node u, node v, f_weight ew);
 
     /* SUMS */
 
@@ -1527,7 +1584,7 @@ public:
      * Returns the sum of all edge weights.
      * @return The sum of all edge weights.
      */
-    edgeweight totalEdgeWeight() const noexcept;
+    f_weight totalEdgeWeight() const noexcept;
 
     /**
      * Get an iterable range over the nodes of the graph.
@@ -1632,7 +1689,7 @@ public:
      * @return @a edge weight to the i-th (outgoing) neighbor of @a u, or @c +inf if no such
      * neighbor exists.
      */
-    edgeweight getIthNeighborWeight(node u, index i) const {
+    f_weight getIthNeighborWeight(node u, index i) const {
         if (!hasNode(u) || i >= outEdges[u].size())
             return nullWeight;
         return isWeighted() ? outEdgeWeights[u][i] : defaultEdgeWeight;
@@ -1646,7 +1703,7 @@ public:
      * @return pair: i-th (outgoing) neighbor of @a u and the corresponding
      * edge weight, or @c defaultEdgeWeight if unweighted.
      */
-    std::pair<node, edgeweight> getIthNeighborWithWeight(node u, index i) const {
+    std::pair<node, f_weight> getIthNeighborWithWeight(node u, index i) const {
         if (!hasNode(u) || i >= outEdges[u].size())
             return {none, none};
         return getIthNeighborWithWeight(unsafe, u, i);
@@ -1660,7 +1717,7 @@ public:
      * @return pair: i-th (outgoing) neighbor of @a u and the corresponding
      * edge weight, or @c defaultEdgeWeight if unweighted.
      */
-    std::pair<node, edgeweight> getIthNeighborWithWeight(Unsafe, node u, index i) const {
+    std::pair<node, f_weight> getIthNeighborWithWeight(Unsafe, node u, index i) const {
         if (!isWeighted())
             return {outEdges[u][i], defaultEdgeWeight};
         return {outEdges[u][i], outEdgeWeights[u][i]};
@@ -1756,7 +1813,7 @@ public:
      *
      * @param handle Takes parameters <code>(node, node)</code>, <code>(node,
      * node, edgweight)</code>, <code>(node, node, edgeid)</code> or
-     * <code>(node, node, edgeweight, edgeid)</code>.
+     * <code>(node, node, f_weight, edgeid)</code>.
      */
     template <typename L>
     void forEdges(L handle) const;
@@ -1767,7 +1824,7 @@ public:
      *
      * @param handle Takes parameters <code>(node, node)</code> or
      * <code>(node, node, edgweight)</code>, <code>(node, node, edgeid)</code>
-     * or <code>(node, node, edgeweight, edgeid)</code>.
+     * or <code>(node, node, f_weight, edgeid)</code>.
      */
     template <typename L>
     void parallelForEdges(L handle) const;
@@ -1780,7 +1837,7 @@ public:
      *
      * @param u Node.
      * @param handle Takes parameter <code>(node)</code> or <code>(node,
-     * edgeweight)</code> which is a neighbor of @a u.
+     * f_weight)</code> which is a neighbor of @a u.
      * @note For directed graphs only outgoing edges from @a u are considered.
      * A node is its own neighbor if there is a self-loop.
      *
@@ -1794,8 +1851,8 @@ public:
      *
      * @param u Node.
      * @param handle Takes parameters <code>(node, node)</code>, <code>(node,
-     * node, edgeweight)</code>, <code>(node, node, edgeid)</code> or
-     * <code>(node, node, edgeweight, edgeid)</code> where the first node is
+     * node, f_weight)</code>, <code>(node, node, edgeid)</code> or
+     * <code>(node, node, f_weight, edgeid)</code> where the first node is
      * @a u and the second is a neighbor of @a u.
      * @note For undirected graphs all edges incident to @a u are also
      * outgoing edges.
@@ -1928,25 +1985,25 @@ template <typename T>
 void erase(node u, index idx, std::vector<std::vector<T>> &vec);
 // implementation for weighted == true
 template <bool hasWeights>
-inline edgeweight Graph::getOutEdgeWeight(node u, index i) const {
+inline f_weight Graph::getOutEdgeWeight(node u, index i) const {
     return outEdgeWeights[u][i];
 }
 
 // implementation for weighted == false
 template <>
-inline edgeweight Graph::getOutEdgeWeight<false>(node, index) const {
+inline f_weight Graph::getOutEdgeWeight<false>(node, index) const {
     return defaultEdgeWeight;
 }
 
 // implementation for weighted == true
 template <bool hasWeights>
-inline edgeweight Graph::getInEdgeWeight(node u, index i) const {
+inline f_weight Graph::getInEdgeWeight(node u, index i) const {
     return inEdgeWeights[u][i];
 }
 
 // implementation for weighted == false
 template <>
-inline edgeweight Graph::getInEdgeWeight<false>(node, index) const {
+inline f_weight Graph::getInEdgeWeight<false>(node, index) const {
     return defaultEdgeWeight;
 }
 
@@ -2299,7 +2356,7 @@ void Graph::sortEdges(Lambda lambda) {
     std::vector<std::vector<index>> indicesGlobal(omp_get_max_threads());
 
     const auto sortAdjacencyArrays = [&](node u, std::vector<node> &adjList,
-                                         std::vector<edgeweight> &weights,
+                                         std::vector<f_weight> &weights,
                                          std::vector<edgeid> &edgeIds) -> void {
         auto &indices = indicesGlobal[omp_get_thread_num()];
         if (adjList.size() > indices.size())
@@ -2343,7 +2400,7 @@ void Graph::sortEdges(Lambda lambda) {
         if (degree(u) < 2)
             return;
 
-        std::vector<edgeweight> dummyEdgeWeights;
+        std::vector<f_weight> dummyEdgeWeights;
         std::vector<edgeid> dummyEdgeIds;
         sortAdjacencyArrays(u, outEdges[u], isWeighted() ? outEdgeWeights[u] : dummyEdgeWeights,
                             hasEdgeIds() ? outEdgeIds[u] : dummyEdgeIds);
