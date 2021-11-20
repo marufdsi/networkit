@@ -137,8 +137,8 @@ namespace NetworKit {
 //        outDegree = G->getOutDegree();
         outEdgeWeights = G->getOutEdgeWeights();
         outEdges = G->getOutEdges();
-        for (auto oe : outEdges) {
-            outDegree.push_back(oe.size());
+        for (int i=0; i<outEdges.size(); ++i) {
+            outDegree.push_back(outEdges[i].size());
         }
 
         index max_tid = omp_get_max_threads();

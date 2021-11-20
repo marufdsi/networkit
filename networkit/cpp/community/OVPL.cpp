@@ -296,8 +296,8 @@ namespace NetworKit {
 //        std::cout<<"Max Thread: "<< max_tid <<std::endl;
         outEdgeWeights = G->getOutEdgeWeights();
         outEdges = G->getOutEdges();
-        for (auto oe : outEdges) {
-            outDegree.push_back(oe.size());
+        for (int i=0; i<outEdges.size(); ++i) {
+            outDegree.push_back(outEdges[i].size());
         }
         if(_itter == 0){
 //            outDegree = G->getOutDegree();
