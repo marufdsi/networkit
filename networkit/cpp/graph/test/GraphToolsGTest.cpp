@@ -157,7 +157,7 @@ TEST_P(GraphToolsGTest, testMaxDegree) {
     auto computeMaxWeightedDeg = [&](const Graph &G, bool inDegree) {
         edgeweight maxDeg = std::numeric_limits<edgeweight>::min();
         G.forNodes([&](const node u) {
-            maxDeg = std::max(maxDeg, inDegree ? G.weightedDegreeIn(u) : G.weightedDegree(u));
+            maxDeg = std::max(maxDeg, inDegree ? (edgeweight)G.weightedDegreeIn(u) : (edgeweight)G.weightedDegree(u));
         });
 
         return maxDeg;
