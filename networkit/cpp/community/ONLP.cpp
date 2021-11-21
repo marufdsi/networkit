@@ -13,6 +13,7 @@
 #include <networkit/auxiliary/Random.hpp>
 #include <networkit/auxiliary/Timer.hpp>
 #include <networkit/community/ONLP.hpp>
+#include <vector>
 
 namespace NetworKit {
 
@@ -64,6 +65,19 @@ void ONLP::run() {
 
     Aux::Timer runtime;
 
+    index omega = result.upperBound();
+    std::vector<index> data(z);
+    std::vector<count> outDegree;
+    const std::vector<f_weight> *outEdgeWeights;
+    const std::vector<node> *outEdges;
+    bool isGraphWeighted = G->isWeighted();
+    outEdgeWeights = G->getOutEdgeWeights();
+    outEdges = G->getOutEdges();
+    for (index i=0; i<z; ++i) {
+        outDegree.push_back(outEdges[i].size());
+        data[i] = result.subsetOf(i);
+    }
+
     // propagate labels
     while ((nUpdated > this->updateThreshold)  && (nIterations < maxIterations)) { // as long as a label has changed... or maximum iterations reached
         runtime.start();
@@ -72,30 +86,35 @@ void ONLP::run() {
 
         // reset updated
         nUpdated = 0;
-
         G->balancedParallelForNodes([&](node v){
             if ((activeNodes[v]) && (G->degree(v) > 0)) {
 
-                std::map<label, double> labelWeights; // neighborLabelCounts maps label -> frequency in the neighbors
+                std::vector<f_weight>labelWeights(omega, 0);
+                std::vector<f_weight>uniqueLabels(omega, 0);
+                index _cnt = 0;
+                for (int i = 0; i < outEdges[v].size(); ++i) {
+                    node w = outEdges[v][i];
+                    f_weight weight = isGraphWeighted ? outEdgeWeights[v][i] : f_defaultEdgeWeight;
+                    label lw = data[w];
+                    if(labelWeights[lw] == 0){
+                        uniqueLabels[_cnt++] = lw;
+                    }
+                    labelWeights[lw] += weight;
 
-                // weigh the labels in the neighborhood of v
-                G->forNeighborsOf(v, [&](node w, edgeweight weight) {
-                    label lw = result.subsetOf(w);
-                    labelWeights[lw] += weight; // add weight of edge {v, w}
-                });
+                }
 
                 // get heaviest label
-                label heaviest = std::max_element(labelWeights.begin(),
-                                labelWeights.end(),
-                                [](const std::pair<label, edgeweight>& p1, const std::pair<label, edgeweight>& p2) {
-                                    return p1.second < p2.second;})->first;
-
-                if (result.subsetOf(v) != heaviest) { // UPDATE
-                    result.moveToSubset(heaviest,v); //result[v] = heaviest;
+                label heaviest = -1;
+                for (int i = 0; i < _cnt; ++i) {
+                    heaviest = std::max(heaviest, labelWeights[uniqueLabels[i]]);
+                }
+                if (heaviest >-1 && data[v] != heaviest) { // UPDATE
+                    data[v] = heaviest; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
-                    G->forNeighborsOf(v, [&](node u) {
+                    for (int i = 0; i < outEdges[v].size(); ++i) {
+                        node u = outEdges[v][i];
                         activeNodes[u] = true;
-                    });
+                    }
                 } else {
                     activeNodes[v] = false;
                 }
