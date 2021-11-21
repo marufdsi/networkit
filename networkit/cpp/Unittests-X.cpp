@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
     /// Collect info from commandline arguments
     count argi = 1;
     std::string path = "";
-    std::cout<<"Params:" << std::endl;
+    std::cout<<"Params size:" << argc << std::endl;
     if(argc>argi) {
         path = argv[argi++];
         std::cout << "Path: " << path << std::endl;
