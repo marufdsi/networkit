@@ -192,6 +192,13 @@ int main(int argc, char *argv[]) {
         cache_size = std::strtol(argv[argi++], (char**)NULL, 10);
     }
 
+    std::cout<<"Params:" << std::endl;
+    std::cout<<"Threads:" << ppn << std::endl;
+    std::cout<<"Version:" << version << std::endl;
+    std::cout<<"Input Method:" << _inputMethod << std::endl;
+    std::cout<<"Iterations:" << _iterations << std::endl;
+    std::cout<<"FullVec:" << fullVec << std::endl;
+    std::cout<<"Architecture:" << architecture << std::endl;
     /// Initialize reader
     SNAPGraphReader snapReader;
     METISGraphReader metisReader;
