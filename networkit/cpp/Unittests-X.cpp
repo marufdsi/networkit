@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
     }
     std::cout<<"Version:" << version << std::endl;
     count _inputMethod = 1;
-    if (argc >= argi) {
+    if (argc > argi) {
         _inputMethod = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
     std::cout<<"Input Method:" << _inputMethod << std::endl;
@@ -181,22 +181,22 @@ int main(int argc, char *argv[]) {
     }
     std::cout<<"Iterations:" << _iterations << std::endl;
     bool fullVec = false;
-    if (argc >= argi) {
+    if (argc > argi) {
         fullVec = std::stoi(argv[argi++]);
     }
     std::cout<<"FullVec:" << fullVec << std::endl;
     count architecture = 1;
-    if (argc >= argi) {
+    if (argc > argi) {
         architecture = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
     std::cout<<"Architecture:" << architecture << std::endl;
     bool refine = false;
-    /*if (argc >= argi) {
+    if (argc > argi) {
         refine = std::stoi(argv[argi++]);
-    }*/
+    }
     std::cout<<"refine:" << refine << std::endl;
     long cache_size = 25*1024*1024;
-    if (argc >= argi) {
+    if (argc > argi) {
         cache_size = std::strtol(argv[argi++], (char**)NULL, 10);
     }
     std::cout<<"cache_size:" << cache_size << std::endl;
