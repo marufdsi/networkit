@@ -150,6 +150,7 @@ int main(int argc, char *argv[]) {
     /// Collect info from commandline arguments
     count argi = 1;
     std::string path = "";
+    std::cout<<"Params:" << std::endl;
     if(argc>argi) {
         path = argv[argi++];
         std::cout << "Path: " << path << std::endl;
@@ -163,26 +164,32 @@ int main(int argc, char *argv[]) {
         Aux::setNumberOfThreads((int)std::strtol((th), (char**)NULL, 10));
 #endif
     }
+    std::cout<<"Threads:" << ppn << std::endl;
     int version = 0;
     if (argc > argi) {
         version = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
+    std::cout<<"Version:" << version << std::endl;
     count _inputMethod = 1;
     if (argc >= argi) {
         _inputMethod = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
+    std::cout<<"Input Method:" << _inputMethod << std::endl;
     count _iterations = 25;
     if (argc > argi) {
         _iterations = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
+    std::cout<<"Iterations:" << _iterations << std::endl;
     bool fullVec = false;
     if (argc >= argi) {
         fullVec = std::stoi(argv[argi++]);
     }
+    std::cout<<"FullVec:" << fullVec << std::endl;
     count architecture = 1;
     if (argc >= argi) {
         architecture = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
+    std::cout<<"Architecture:" << architecture << std::endl;
     bool refine = false;
     if (argc >= argi) {
         refine = std::stoi(argv[argi++]);
@@ -192,13 +199,6 @@ int main(int argc, char *argv[]) {
         cache_size = std::strtol(argv[argi++], (char**)NULL, 10);
     }
 
-    std::cout<<"Params:" << std::endl;
-    std::cout<<"Threads:" << ppn << std::endl;
-    std::cout<<"Version:" << version << std::endl;
-    std::cout<<"Input Method:" << _inputMethod << std::endl;
-    std::cout<<"Iterations:" << _iterations << std::endl;
-    std::cout<<"FullVec:" << fullVec << std::endl;
-    std::cout<<"Architecture:" << architecture << std::endl;
     /// Initialize reader
     SNAPGraphReader snapReader;
     METISGraphReader metisReader;
