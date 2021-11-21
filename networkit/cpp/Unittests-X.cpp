@@ -194,18 +194,22 @@ int main(int argc, char *argv[]) {
     if (argc >= argi) {
         refine = std::stoi(argv[argi++]);
     }
+    std::cout<<"refine:" << refine << std::endl;
     long cache_size = 25*1024*1024;
     if (argc >= argi) {
         cache_size = std::strtol(argv[argi++], (char**)NULL, 10);
     }
+    std::cout<<"cache_size:" << cache_size << std::endl;
 
     /// Initialize reader
     SNAPGraphReader snapReader;
     METISGraphReader metisReader;
     Modularity modularity;
     std::string _graphName, dirName;
+    std::cout<<"Before Split:" << std::endl;
     std::vector<std::string>tokens = Aux::StringTools::split(path, '/');
     _graphName = Aux::StringTools::split(tokens[tokens.size()-1], '.')[0];
+    std::cout<<"After Split:" << std::endl;
     Graph G;
     if(_inputMethod == 1)
         G = snapReader.read(path);
