@@ -191,9 +191,9 @@ int main(int argc, char *argv[]) {
     }
     std::cout<<"Architecture:" << architecture << std::endl;
     bool refine = false;
-    if (argc >= argi) {
+    /*if (argc >= argi) {
         refine = std::stoi(argv[argi++]);
-    }
+    }*/
     std::cout<<"refine:" << refine << std::endl;
     long cache_size = 25*1024*1024;
     if (argc >= argi) {
