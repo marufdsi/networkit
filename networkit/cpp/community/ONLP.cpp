@@ -175,6 +175,9 @@ void ONLP::run() {
                     labelWeights2[lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight; // add weight of edge {v, w}
                 }
                 assert(_cnt == labelWeights2.size());
+                for (auto m : labelWeights2) {
+                    assert(m.second == labelWeights[tid][m.first]);
+                }
 
                 // get heaviest label
                 label heaviest = -1;
