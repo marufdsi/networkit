@@ -166,10 +166,10 @@ void ONLP::run() {
                 f_weight _heavyWeight = -1;
                 label lv = data[v];
                 for (auto m : labelWeights) {
-                    label lw = m->first;
-                    if (m->second > _heavyWeight) {
+                    label lw = m.first;
+                    if (m.second > _heavyWeight) {
                         heaviest = lw;
-                        _heavyWeight = m->second;
+                        _heavyWeight = m.second;
                     }
                 }
                 if (heaviest != -1 && lv != heaviest) { // UPDATE
