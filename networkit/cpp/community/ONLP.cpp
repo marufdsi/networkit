@@ -189,7 +189,7 @@ void ONLP::run() {
 
     } // end while
     for (index i=0; i<z; ++i) {
-        result.moveToSubset(data[i], i);
+//        result.moveToSubset(data[i], i);
     }
     hasRun = true;
 }
