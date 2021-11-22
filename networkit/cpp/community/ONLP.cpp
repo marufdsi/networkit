@@ -103,7 +103,7 @@ void ONLP::run() {
         nUpdated = 0;
 #pragma omp parallel for schedule(guided)
         for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
-            if ((activeNodes[v]) && (G->degree(v) > 0)) {
+            if (G->hasNode(v) && (activeNodes[v]) && (G->degree(v) > 0)) {
                 index tid = omp_get_thread_num();
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
@@ -113,14 +113,12 @@ void ONLP::run() {
                 index _cnt = 0;
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
-//                    if(v != w) {
-                        label lw = data[w];
-                        if (labelWeights[tid][lw] == -1) {
-                            labelWeights[tid][lw] = 0;
-                            uniqueLabels[tid][_cnt++] = lw;
-                        }
-                        labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
-//                    }
+                    label lw = data[w];
+                    if (labelWeights[tid][lw] == -1) {
+                        labelWeights[tid][lw] = 0;
+                        uniqueLabels[tid][_cnt++] = lw;
+                    }
+                    labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
                 }
 
                 // get heaviest label
@@ -129,9 +127,6 @@ void ONLP::run() {
                 label lv = data[v];
                 for (int i = 0; i < _cnt; ++i) {
                     label lw = uniqueLabels[tid][i];
-                    if(labelWeights[tid][lw] <=0){
-                        std::cout<< "Issues" << labelWeights[tid][lw] << std::endl;
-                    }
                     if (labelWeights[tid][lw] > _heavyWeight) {
                         heaviest = lw;
                         _heavyWeight = labelWeights[tid][lw];
@@ -150,6 +145,8 @@ void ONLP::run() {
 
             } else {
                 // node is isolated
+                if(!G->hasNode(v))
+                    std::cout<< v << " does not exist!!!" << std::endl;
             }
         }
 
