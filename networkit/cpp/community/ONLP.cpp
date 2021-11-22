@@ -121,7 +121,7 @@ void ONLP::run() {
                         labelWeights[tid][lw] = 0;
                         uniqueLabels[tid][_cnt++] = lw;
                     }
-                    labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
+                    labelWeights[tid][lw] += weight; isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
                 });
 
                 // get heaviest label
