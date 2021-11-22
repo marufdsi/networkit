@@ -206,7 +206,8 @@ void ONLP::run() {
                     }
                 }
                 if(heaviest2 != heaviest){
-                    std::cout<<"[" << v << "] Wrong neighbor label: " << heaviest2 << " != " << heaviest << std::endl;
+                    std::cout<<"[" << v << "] Wrong neighbor label: " << heaviest2 << " weight: "
+                              << _heavyWeight2 << " != " << heaviest << " weight: " << _heavyWeight << std::endl;
                     return;
                 }
                 if (heaviest2 != -1 && lv != heaviest2) { // UPDATE
