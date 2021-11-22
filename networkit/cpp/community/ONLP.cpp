@@ -150,22 +150,37 @@ void ONLP::run() {
 
         G->balancedParallelForNodes([&](node v){
             if ((activeNodes[v]) && (G->degree(v) > 0)) {
-
-                std::map<label, double> labelWeights; // neighborLabelCounts maps label -> frequency in the neighbors
+                index tid = omp_get_thread_num();
+                std::map<label, double> labelWeights2;
+                for (int i = 0; i < outEdges[v].size(); ++i) {
+                    node w = outEdges[v][i];
+                    label lw = data[w];
+                    labelWeights[tid][lw] = -1;
+                }
+                index _cnt = 0;
+                for (int i = 0; i < outEdges[v].size(); ++i) {
+                    node w = outEdges[v][i];
+                    label lw = data[w];
+                    if (labelWeights[tid][lw] == -1) {
+                        labelWeights[tid][lw] = 0;
+                        uniqueLabels[tid][_cnt++] = lw;
+                    }
+                    labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
+                }
 
                 // weigh the labels in the neighborhood of v
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
                     label lw = data[w]; //result.subsetOf(w);
-                    labelWeights[lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight; // add weight of edge {v, w}
+                    labelWeights2[lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight; // add weight of edge {v, w}
                 }
-
+                assert(_cnt == labelWeights2.size());
 
                 // get heaviest label
                 label heaviest = -1;
                 f_weight _heavyWeight = -1;
                 label lv = data[v];
-                for (auto m : labelWeights) {
+                for (auto m : labelWeights2) {
                     label lw = m.first;
                     if (m.second > _heavyWeight) {
                         heaviest = lw;
