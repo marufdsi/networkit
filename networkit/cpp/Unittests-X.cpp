@@ -565,7 +565,7 @@ int main(int argc, char *argv[]) {
         std::cout << "***** Legacy PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
-            PLP lp(gCopy);
+            PLP lp(gCopy, std::numeric_limits<uint64_t>::max(), _iterations);
 #if POWER_LOG
             //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
             rapl_sysfs_init();
@@ -623,7 +623,7 @@ int main(int argc, char *argv[]) {
         std::cout << "***** Modified PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
-            ONLP onlp(gCopy);
+            ONLP onlp(gCopy, std::numeric_limits<uint64_t>::max(), _iterations);
 #if POWER_LOG
             //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
             rapl_sysfs_init();
