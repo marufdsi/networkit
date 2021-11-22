@@ -124,17 +124,20 @@ void ONLP::run() {
                 }
 
                 // get heaviest label
-                label heaviest = none;
+                label heaviest = -1;
                 f_weight _heavyWeight = -1;
                 label lv = data[v];
                 for (int i = 0; i < _cnt; ++i) {
                     label lw = uniqueLabels[tid][i];
+                    if(labelWeights[tid][lw] <=0){
+                        std::cout<< "Issues" << labelWeights[tid][lw] << endl;
+                    }
                     if (labelWeights[tid][lw] > _heavyWeight) {
                         heaviest = lw;
                         _heavyWeight = labelWeights[tid][lw];
                     }
                 }
-                if (heaviest != none && lv != heaviest) { // UPDATE
+                if (heaviest != -1 && lv != heaviest) { // UPDATE
                     data[v] = heaviest; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
                     for (int i = 0; i < outEdges[v].size(); ++i) {
