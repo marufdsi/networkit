@@ -311,12 +311,12 @@ int main(int argc, char *argv[]) {
         std::cout << "***** Vectorized Row Version *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
-            ONPL *vPLM = new ONPL(gCopy, refine, 1.0, "balanced", _iterations, fullVec);
+            ONPL onpl(gCopy, refine, 1.0, "balanced", _iterations, fullVec);
             std::string vplm_conflict_file = plm_details_folder + "/vplm_conflict_log_" + ppn + "_" + _graphName + ".csv";
-            vPLM->setupCSVFile(vplm_conflict_file);
-            vPLM->initONPL();
+            onpl.setupCSVFile(vplm_conflict_file);
+            onpl.initONPL();
 #if POWER_LOG
-            //            vPLM->setupPowerFile(_graphName, std::stoi(ppn));
+            //            onpl.setupPowerFile(_graphName, std::stoi(ppn));
             std::cout<<"Setup energy" << std::endl;
             rapl_sysfs_init();
             rapl_sysfs_before();
@@ -325,7 +325,9 @@ int main(int argc, char *argv[]) {
             //            clock_gettime(CLOCK_MONOTONIC, &start_vplm);
             clock_gettime(CLOCK_REALTIME, &start);
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
-            vPLM->run();
+            std::cout<<"Run ONPL" << std::endl;
+            onpl.run();
+            std::cout<<"Done ONPL" << std::endl;
             if (k>=SKIP_RUN) {
                 //                clock_gettime(CLOCK_MONOTONIC, &end_vplm);
                 clock_gettime(CLOCK_REALTIME, &end);
@@ -344,10 +346,10 @@ int main(int argc, char *argv[]) {
                 std::cout<<"Done" << std::endl;
 #endif
 
-                Partition v_zeta = vPLM->getPartition();
+                Partition v_zeta = onpl.getPartition();
                 count comm = v_zeta.numberOfSubsets();
                 double mod = modularity.getQuality(v_zeta, G);
-                auto times = vPLM->getTiming();
+                auto times = onpl.getTiming();
                 double move_time = 0, coarsen_time = 0, refine_time = 0;
                 for (double t : times["move"]) {
                     move_time += t;
@@ -358,7 +360,7 @@ int main(int argc, char *argv[]) {
                 for (double t : times["refine"]) {
                     refine_time += t;
                 }
-//                auto c_counts = vPLM->getCacheCount();
+//                auto c_counts = onpl.getCacheCount();
                 long long cache_count = 0;
                 /*for(auto c : c_counts["move"]){
                     cache_count += c;
