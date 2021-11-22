@@ -130,6 +130,7 @@ void ONPL::run() {
     //        std::vector<std::vector<index > > community_counter = std::vector<std::vector<index > >(33,std::vector<index>(16, 0));
     //        count ittr_counter = 0;
     const count *outDegree;
+    posix_memalign((void **) &outDegree, alignment, z * sizeof(count));
     const std::vector<f_weight> *outEdgeWeights;
     const std::vector<node> *outEdges;
     bool isGraphWeighted = G->isWeighted();
@@ -157,10 +158,11 @@ void ONPL::run() {
 
     const   __m512 total_vec = _mm512_set1_ps(total);
 
-    outDegree = G->getOutDegree();
     outEdgeWeights = G->getOutEdgeWeights();
     outEdges = G->getOutEdges();
-
+    for (int i = 0; i < z; ++i) {
+        outDegree[i] = G->degree(i);
+    }
     index max_tid = omp_get_max_threads();
     index max_deg_arr[max_tid];
 
@@ -909,7 +911,7 @@ void ONPL::run() {
             clock_gettime(CLOCK_REALTIME, &start_move);
 #endif
             moved = false;
-            //                old_mod = modularity.getQuality(zeta, G);
+            //                old_mod = modularity.getQuality(zeta, *G);
             //                count vec_count = 0;
             if(fullVec) {
                 if(!isGraphWeighted && m_iter == 0) {
@@ -963,7 +965,7 @@ void ONPL::run() {
             double elapsed_move_time = ((end_move.tv_sec * 1000 + (end_move.tv_nsec / 1.0e6)) - (start_move.tv_sec * 1000 + (start_move.tv_nsec / 1.0e6)));
             f_conflict_log << m_iter << "," << iter << "," << z << "," << G->numberOfEdges() << "," << conflict_community << "," << elapsed_move_time << std::endl;
 #endif
-            //                new_mod = modularity.getQuality(zeta, G);
+            //                new_mod = modularity.getQuality(zeta, *G);
         } while (moved /*&& (new_mod - old_mod)>0.000001*/ && (iter < maxIter) && handler.isRunning());
 #if POWER_LOG
         // End the calculate of power
@@ -982,7 +984,7 @@ void ONPL::run() {
     };
 
     handler.assureRunning();
-    double old_modularity = modularity.getQuality(zeta, G);
+    double old_modularity = modularity.getQuality(zeta, *G);
     // first move phase
     Aux::Timer timer;
     struct timespec c_start, c_end;
@@ -998,7 +1000,7 @@ void ONPL::run() {
     //        printf("[%d] move-phase time (%.4f secs)\n", m_iter, (double)(c_end - c_start) / CLOCKS_PER_SEC);
     //        timing["move"].push_back(timer.elapsedMilliseconds());
     timing["move"].push_back(m_time);
-    double new_modularity = modularity.getQuality(zeta, G);
+    double new_modularity = modularity.getQuality(zeta, *G);
     handler.assureRunning();
     /*if(m_iter > 1 && (new_modularity - old_modularity)<0.000001)
         change = false;*/
@@ -1035,7 +1037,7 @@ void ONPL::run() {
 
 
         //            DEBUG("coarse graph has ", coarsened.first.numberOfNodes(), " nodes and ", coarsened.first.numberOfEdges(), " edges");
-        zeta = prolong(coarsened.first, zetaCoarse, G, coarsened.second); // unpack communities in coarse graph onto fine graph
+        zeta = prolong(coarsened.first, zetaCoarse, *G, coarsened.second); // unpack communities in coarse graph onto fine graph
         // refinement phase
         if (refine) {
             //                DEBUG("refinement phase");
