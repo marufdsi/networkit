@@ -101,28 +101,25 @@ void ONLP::run() {
 //        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
-//#pragma omp parallel for schedule(guided)
-//        for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
-            G->balancedParallelForNodes([&](node v){
+/*#pragma omp parallel for schedule(guided)
+        for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
             if (G->hasNode(v) && (activeNodes[v]) && (G->degree(v) > 0)) {
                 index tid = omp_get_thread_num();
-                G->forNeighborsOf(v, [&](node w, edgeweight weight) {
-//                for (int i = 0; i < outEdges[v].size(); ++i) {
-//                    node w = outEdges[v][i];
+                for (int i = 0; i < outEdges[v].size(); ++i) {
+                    node w = outEdges[v][i];
                     label lw = data[w];
                     labelWeights[tid][lw] = -1;
-                });
+                }
                 index _cnt = 0;
-                G->forNeighborsOf(v, [&](node w, edgeweight weight) {
-//                for (int i = 0; i < outEdges[v].size(); ++i) {
-//                    node w = outEdges[v][i];
+                for (int i = 0; i < outEdges[v].size(); ++i) {
+                    node w = outEdges[v][i];
                     label lw = data[w];
                     if (labelWeights[tid][lw] == -1) {
                         labelWeights[tid][lw] = 0;
                         uniqueLabels[tid][_cnt++] = lw;
                     }
-                    labelWeights[tid][lw] += weight; //isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
-                });
+                    labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
+                }
 
                 // get heaviest label
                 label heaviest = -1;
@@ -138,9 +135,40 @@ void ONLP::run() {
                 if (heaviest != -1 && lv != heaviest) { // UPDATE
                     data[v] = heaviest; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
+                    for (int i = 0; i < outEdges[v].size(); ++i) {
+                        node u = outEdges[v][i];
+                        activeNodes[u] = true;
+                    }
+                } else {
+                    activeNodes[v] = false;
+                }
+
+            } else {
+                // node is isolated
+            }
+        }*/
+
+        G->balancedParallelForNodes([&](node v){
+            if ((activeNodes[v]) && (G->degree(v) > 0)) {
+
+                std::map<label, double> labelWeights; // neighborLabelCounts maps label -> frequency in the neighbors
+
+                // weigh the labels in the neighborhood of v
+                G->forNeighborsOf(v, [&](node w, edgeweight weight) {
+                    label lw = result.subsetOf(w);
+                    labelWeights[lw] += weight; // add weight of edge {v, w}
+                });
+
+                // get heaviest label
+                label heaviest = std::max_element(labelWeights.begin(),
+                                                  labelWeights.end(),
+                                                  [](const std::pair<label, edgeweight>& p1, const std::pair<label, edgeweight>& p2) {
+                                                      return p1.second < p2.second;})->first;
+
+                if (result.subsetOf(v) != heaviest) { // UPDATE
+                    result.moveToSubset(heaviest,v); //result[v] = heaviest;
+                    nUpdated += 1; // TODO: atomic update?
                     G->forNeighborsOf(v, [&](node u) {
-//                    for (int i = 0; i < outEdges[v].size(); ++i) {
-//                        node u = outEdges[v][i];
                         activeNodes[u] = true;
                     });
                 } else {
