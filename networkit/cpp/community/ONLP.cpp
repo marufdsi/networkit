@@ -94,7 +94,7 @@ void ONLP::run() {
                 index _cnt = 0;
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
-                    f_weight weight = isGraphWeighted ? outEdgeWeights[v][i] : f_defaultEdgeWeight;
+                    f_weight weight = isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
                     label lw = data[w];
                     if(labelWeights[lw] == 0){
                         uniqueLabels[_cnt++] = lw;
@@ -106,7 +106,7 @@ void ONLP::run() {
                 // get heaviest label
                 label heaviest = -1;
                 for (int i = 0; i < _cnt; ++i) {
-                    heaviest = std::max(heaviest, labelWeights[uniqueLabels[i]]);
+                    heaviest = labelWeights[uniqueLabels[i]] > heaviest ? labelWeights[uniqueLabels[i]] : heaviest;
                 }
                 if (heaviest >-1 && data[v] != heaviest) { // UPDATE
                     data[v] = heaviest; //result[v] = heaviest;
