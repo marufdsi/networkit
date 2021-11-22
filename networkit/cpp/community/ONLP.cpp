@@ -79,6 +79,9 @@ void ONLP::run() {
         data[i] = result.subsetOf(i);
     }
 
+    std::vector<std::vector<f_weight> >labelWeights(Aux::omp_get_num_threads(), std::vector<f_weight>(omega));
+    std::vector<std::vector<f_weight> >uniqueLabels(Aux::omp_get_num_threads(), std::vector<f_weight>(omega));
+
     std::cout<< "maxIterations: " << maxIterations << std::endl;
     // propagate labels
     while ((nUpdated > this->updateThreshold)  && (nIterations < maxIterations)) { // as long as a label has changed... or maximum iterations reached
@@ -91,24 +94,30 @@ void ONLP::run() {
 #pragma omp parallel for schedule(guided)
         for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
             if ((activeNodes[v]) && (G->degree(v) > 0)) {
-                std::vector<f_weight>labelWeights(omega, 0);
-                std::vector<f_weight>uniqueLabels(omega, 0);
+                index tid = omp_get_thread_num();
+                for (int i = 0; i < outEdges[v].size(); ++i) {
+                    node w = outEdges[v][i];
+                    label lw = data[w];
+                    labelWeights[tid][lw] = 0;
+                }
+//                std::vector<f_weight>labelWeights(omega, 0);
+//                std::vector<f_weight>uniqueLabels(omega, 0);
                 index _cnt = 0;
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
                     f_weight weight = isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
                     label lw = data[w];
-                    if(labelWeights[lw] == 0){
-                        uniqueLabels[_cnt++] = lw;
+                    if(labelWeights[tid][lw] == 0){
+                        uniqueLabels[tid][_cnt++] = lw;
                     }
-                    labelWeights[lw] += weight;
+                    labelWeights[tid][lw] += weight;
 
                 }
 
                 // get heaviest label
                 label heaviest = -1;
                 for (int i = 0; i < _cnt; ++i) {
-                    heaviest = labelWeights[uniqueLabels[i]] > heaviest ? labelWeights[uniqueLabels[i]] : heaviest;
+                    heaviest = labelWeights[tid][uniqueLabels[tid][i]] > heaviest ? labelWeights[tid][uniqueLabels[tid][i]] : heaviest;
                 }
                 if (heaviest >-1 && data[v] != heaviest) { // UPDATE
                     data[v] = heaviest; //result[v] = heaviest;
