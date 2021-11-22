@@ -1045,6 +1045,7 @@ namespace NetworKit {
 //        ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
         ///
         movePhase();
+        std::cout<<"[" << m_iter << "] Move phase done" << std::endl;
         /// Read cache miss count
 //        ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
 //        read(fd, &cache_miss_count, sizeof(long long));
