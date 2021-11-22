@@ -78,12 +78,13 @@ void ONLP::run() {
         data[i] = result.subsetOf(i);
     }
 
+    std::cout<< "maxIterations: " << maxIterations << std::endl;
     // propagate labels
     while ((nUpdated > this->updateThreshold)  && (nIterations < maxIterations)) { // as long as a label has changed... or maximum iterations reached
         runtime.start();
         nIterations += 1;
         DEBUG("[BEGIN] LabelPropagation: iteration #" , nIterations);
-
+        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
         G->balancedParallelForNodes([&](node v){
