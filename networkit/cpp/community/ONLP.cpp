@@ -141,6 +141,9 @@ void ONLP::run() {
         DEBUG("[DONE] LabelPropagation: iteration #" , nIterations , " - updated " , nUpdated , " labels, time spent: " , runtime.elapsedTag());
 
     } // end while
+    for (index i=0; i<z; ++i) {
+        result.moveToSubset(data[i], i);
+    }
     hasRun = true;
 }
 
