@@ -75,15 +75,22 @@ void ONLP::run() {
     bool isGraphWeighted = G->isWeighted();
     outEdgeWeights = G->getOutEdgeWeights();
     outEdges = G->getOutEdges();
+    index max_sub = 0, min_sub = z;
     for (index i=0; i<z; ++i) {
         outDegree.push_back(outEdges[i].size());
         data[i] = result.subsetOf(i);
+        if(data[i] > max_sub)
+            max_sub = data[i];
+        if(data[i] < min_sub)
+            min_sub = data[i];
     }
 
     std::vector<std::vector<f_weight> >labelWeights(omp_get_max_threads(), std::vector<f_weight>(omega));
     std::vector<std::vector<f_weight> >uniqueLabels(omp_get_max_threads(), std::vector<f_weight>(z));
 
-    std::cout<< "maxIterations: " << maxIterations << " max threads: " << omp_get_max_threads() << std::endl;
+    std::cout<< "maxIterations: " << maxIterations << " max threads: " << omp_get_max_threads()
+              << " Threshold: " << this->updateThreshold << " max sub: " << max_sub << " min sub: "
+              << min_sub << std::endl;
     // propagate labels
     while ((nUpdated > this->updateThreshold)  && (nIterations < maxIterations)) { // as long as a label has changed... or maximum iterations reached
         runtime.start();
@@ -99,30 +106,35 @@ void ONLP::run() {
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
                     label lw = data[w];
-                    labelWeights[tid][lw] = 0;
+                    labelWeights[tid][lw] = -1;
                 }
                 index _cnt = 0;
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
-                    f_weight weight = isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
-                    label lw = data[w];
-                    if(labelWeights[tid][lw] == 0){
-                        uniqueLabels[tid][_cnt++] = lw;
+                    if(v != w) {
+                        label lw = data[w];
+                        if (labelWeights[tid][lw] == -1) {
+                            labelWeights[tid][lw] = 0;
+                            uniqueLabels[tid][_cnt++] = lw;
+                        }
+                        labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
                     }
-                    labelWeights[tid][lw] += weight;
-
                 }
 
                 // get heaviest label
-                label heaviest = -1;
+                label heaviest = none;
                 f_weight _heavyWeight = -1;
+                label lv = data[v];
                 for (int i = 0; i < _cnt; ++i) {
-                    if(_heavyWeight < labelWeights[tid][uniqueLabels[tid][i]]){
-                        heaviest = uniqueLabels[tid][i];
-                        _heavyWeight = labelWeights[tid][uniqueLabels[tid][i]];
+                    label lw = uniqueLabels[tid][i];
+                    if(lw != lv) {
+                        if (labelWeights[tid][lw] > _heavyWeight) {
+                            heaviest = lw;
+                            _heavyWeight = labelWeights[tid][lw];
+                        }
                     }
                 }
-                if (heaviest >-1 && data[v] != heaviest) { // UPDATE
+                if (_heavyWeight > 0 && lv != heaviest) { // UPDATE
                     data[v] = heaviest; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
                     for (int i = 0; i < outEdges[v].size(); ++i) {
