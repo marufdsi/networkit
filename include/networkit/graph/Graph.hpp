@@ -1992,7 +1992,7 @@ inline f_weight Graph::getOutEdgeWeight(node u, index i) const {
 // implementation for weighted == false
 template <>
 inline f_weight Graph::getOutEdgeWeight<false>(node, index) const {
-    return defaultEdgeWeight;
+    return fdefaultEdgeWeight;
 }
 
 // implementation for weighted == true
