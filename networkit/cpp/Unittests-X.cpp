@@ -22,6 +22,7 @@
 #include <networkit/auxiliary/PowerCalculator.hpp>
 
 #include <networkit/community/PLP.hpp>
+#include <networkit/community/MPLP.hpp>
 #include <networkit/community/ONLP.hpp>
 #include <networkit/community/PLM.hpp>
 #include <networkit/community/ONPL.hpp>
@@ -619,6 +620,64 @@ int main(int argc, char *argv[]) {
         std::cout << "modularity: " << mplm_mod << std::endl;
     } else if(version == 5) {
         std::cout << "***** Modified PLP *****" << std::endl;
+        for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
+            Graph gCopy = G;
+            MPLP mplp(gCopy, std::numeric_limits<uint64_t>::max(), _iterations);
+#if POWER_LOG
+            //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
+            rapl_sysfs_init();
+            rapl_sysfs_before();
+#endif
+            //            clock_gettime(CLOCK_MONOTONIC, &start_modified);
+            clock_gettime(CLOCK_REALTIME, &start);
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
+            mplp.run();
+            if (k>=SKIP_RUN) {
+                //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
+                clock_gettime(CLOCK_REALTIME, &end);
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_end);
+                long seconds = end.tv_sec - start.tv_sec;
+                long nanoseconds = end.tv_nsec - start.tv_nsec;
+                double elapsed = seconds + nanoseconds*1e-9;
+                seconds = cpu_end.tv_sec - cpu_start.tv_sec;
+                nanoseconds = cpu_end.tv_nsec - cpu_start.tv_nsec;
+                double cpu_elapsed = seconds + nanoseconds*1e-9;
+#if POWER_LOG
+                rapl_sysfs_after();
+                // Results
+                rapl_sysfs_results("MPLP", _graphName, std::stoi(ppn), 1, architecture);
+#endif
+
+                Partition s_zeta = mplp.getPartition();
+                count comm = s_zeta.numberOfSubsets();
+                double mod = modularity.getQuality(s_zeta, G);
+                auto times = mplp.getTiming();
+                count run_time = 0;
+                for (count t : times) {
+                    run_time += t;
+                }
+
+#if OVERALL_LOG
+                graph_log << _graphName << "," << "MPLP" << "," << z << "," << edges << ","
+                          << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
+                          << (_iterations) << "," << 0 << "," << run_time << ","
+                          << 0 << "," << 0 << "," << ppn << "," << "LL"
+                          << "," << 0 << "," << 0 << std::endl;
+#endif
+                et_mplm += cpu_elapsed;
+                mplm_subsets += comm;
+                mplm_mod += mod;
+            }
+            //            std::cout<< "[" << k << "] ******************* Successfully Done ************************ " << std::endl;
+        }
+        et_mplm = et_mplm/NUM_RUN;
+        mplm_subsets = mplm_subsets/NUM_RUN;
+        mplm_mod = mplm_mod/NUM_RUN;
+        std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
+        std::cout << "number of clusters: " << mplm_subsets << std::endl;
+        std::cout << "modularity: " << mplm_mod << std::endl;
+    } else if(version == 6) {
+        std::cout << "***** One Neighbor PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
             ONLP onlp(gCopy, std::numeric_limits<uint64_t>::max(), _iterations);
