@@ -174,9 +174,15 @@ void ONLP::run() {
                     label lw = data[w]; //result.subsetOf(w);
                     labelWeights2[lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight; // add weight of edge {v, w}
                 }
-                assert(_cnt == labelWeights2.size());
+                if(_cnt != labelWeights2.size()){
+                    std::cout<<"[" << v << "] Wrong neighbor count: " << _cnt << " != " << labelWeights2.size() << std::endl;
+                    return;
+                }
                 for (auto m : labelWeights2) {
-                    assert(m.second == labelWeights[tid][m.first]);
+                    if(m.second != labelWeights[tid][m.first]){
+                        std::cout<<"[" << v << "] Wrong label weight: " << labelWeights[tid][m.first] << " != " << m.second << std::endl;
+                        return;
+                    }
                 }
 
                 // get heaviest label
@@ -199,7 +205,10 @@ void ONLP::run() {
                         _heavyWeight2 = labelWeights[tid][lw];
                     }
                 }
-                assert(heaviest2 == heaviest);
+                if(heaviest2 != heaviest){
+                    std::cout<<"[" << v << "] Wrong neighbor label: " << heaviest2 << " != " << heaviest << std::endl;
+                    return;
+                }
                 if (heaviest2 != -1 && lv != heaviest2) { // UPDATE
                     data[v] = heaviest2; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
