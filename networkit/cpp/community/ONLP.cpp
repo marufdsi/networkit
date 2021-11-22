@@ -101,7 +101,7 @@ void ONLP::run() {
 //        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
-/*#pragma omp parallel for schedule(guided)
+#pragma omp parallel for schedule(guided)
         for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
             if (G->hasNode(v) && (activeNodes[v]) && (G->degree(v) > 0)) {
                 index tid = omp_get_thread_num();
@@ -127,7 +127,7 @@ void ONLP::run() {
                 label lv = data[v];
                 for (int i = 0; i < _cnt; ++i) {
                     label lw = uniqueLabels[tid][i];
-                    if (labelWeights[tid][lw] > _heavyWeight) {
+                    if ((labelWeights[tid][lw] > _heavyWeight) || ((labelWeights[tid][lw] == _heavyWeight2) && (heaviest2 > lw))) {
                         heaviest = lw;
                         _heavyWeight = labelWeights[tid][lw];
                     }
@@ -146,89 +146,8 @@ void ONLP::run() {
             } else {
                 // node is isolated
             }
-        }*/
+        }
 
-        G->balancedParallelForNodes([&](node v){
-            if ((activeNodes[v]) && (G->degree(v) > 0)) {
-                index tid = omp_get_thread_num();
-                std::map<label, double> labelWeights2;
-                for (int i = 0; i < outEdges[v].size(); ++i) {
-                    node w = outEdges[v][i];
-                    label lw = data[w];
-                    labelWeights[tid][lw] = -1;
-                }
-                index _cnt = 0;
-                for (int i = 0; i < outEdges[v].size(); ++i) {
-                    node w = outEdges[v][i];
-                    label lw = data[w];
-                    if (labelWeights[tid][lw] == -1) {
-                        labelWeights[tid][lw] = 0;
-                        uniqueLabels[tid][_cnt++] = lw;
-                    }
-                    labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
-                }
-
-                // weigh the labels in the neighborhood of v
-                for (int i = 0; i < outEdges[v].size(); ++i) {
-                    node w = outEdges[v][i];
-                    label lw = data[w]; //result.subsetOf(w);
-                    labelWeights2[lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight; // add weight of edge {v, w}
-                }
-                if(_cnt != labelWeights2.size()){
-                    std::cout<<"[" << v << "] Wrong neighbor count: " << _cnt << " != " << labelWeights2.size() << std::endl;
-                    return;
-                }
-                for (auto m : labelWeights2) {
-                    if(m.second != labelWeights[tid][m.first]){
-                        std::cout<<"[" << v << "] Wrong label weight: " << labelWeights[tid][m.first] << " != " << m.second << std::endl;
-                        return;
-                    }
-                }
-
-                // get heaviest label
-                label heaviest = -1;
-                label heaviest2 = -1;
-                f_weight _heavyWeight = -1;
-                f_weight _heavyWeight2 = -1;
-                label lv = data[v];
-                for (auto m : labelWeights2) {
-                    label lw = m.first;
-                    if (m.second > _heavyWeight) {
-                        heaviest = lw;
-                        _heavyWeight = m.second;
-                    }
-                }
-                for (int i = 0; i < _cnt; ++i) {
-                    label lw = uniqueLabels[tid][i];
-                    if (labelWeights[tid][lw] > _heavyWeight2) {
-                        heaviest2 = lw;
-                        _heavyWeight2 = labelWeights[tid][lw];
-                    }
-                    if ((labelWeights[tid][lw] == _heavyWeight2) && (heaviest2 > lw)) {
-                        heaviest2 = lw;
-                        _heavyWeight2 = labelWeights[tid][lw];
-                    }
-                }
-                if(heaviest2 != heaviest){
-                    std::cout<<"[" << v << "] Wrong neighbor label: " << heaviest2 << " weight: "
-                              << _heavyWeight2 << " != " << heaviest << " weight: " << _heavyWeight << std::endl;
-                    return;
-                }
-                if (heaviest2 != -1 && lv != heaviest2) { // UPDATE
-                    data[v] = heaviest2; //result[v] = heaviest;
-                    nUpdated += 1; // TODO: atomic update?
-                    for (int i = 0; i < outEdges[v].size(); ++i) {
-                        node u = outEdges[v][i];
-                        activeNodes[u] = true;
-                    }
-                } else {
-                    activeNodes[v] = false;
-                }
-
-            } else {
-                // node is isolated
-            }
-        });
 
         // for each while loop iteration...
 
