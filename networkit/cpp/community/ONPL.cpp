@@ -96,7 +96,7 @@ void ONPL::setupPowerFile(std::string graphName, count threads) {
 void ONPL::run() {
     Aux::SignalHandler handler;
     Modularity modularity;
-//        DEBUG("calling run method on " , G.toString());
+//        DEBUG("calling run method on " , G->toString());
 #if POWER_LOG
     //        if(m_iter == 0)
     rapl_sysfs_init();
@@ -108,7 +108,7 @@ void ONPL::run() {
     omp_set_dynamic(0);
     omp_set_num_threads(1);
 #endif
-    count z = G.upperNodeIdBound();
+    count z = G->upperNodeIdBound();
     //        count move_count, tot_move_count = 0;
     size_t alignment = 64;
     index max_deg_of_graph = 0;
@@ -123,7 +123,7 @@ void ONPL::run() {
     // init graph-dependent temporaries
     std::vector<f_weight> volNode(z, 0.0);
     // $\omega(E)$
-    f_weight total = G.totalEdgeWeight();
+    f_weight total = G->totalEdgeWeight();
     //        DEBUG("total edge weight: " , total);
     f_weight divisor = (2 * total * total); // needed in modularity calculation
 
@@ -132,7 +132,7 @@ void ONPL::run() {
     const count *outDegree;
     const std::vector<f_weight> *outEdgeWeights;
     const std::vector<node> *outEdges;
-    bool isGraphWeighted = G.isWeighted();
+    bool isGraphWeighted = G->isWeighted();
     __m512 default_edge_weight;
     f_weight f_defaultEdgeWeight;
     if(!isGraphWeighted){
@@ -157,9 +157,9 @@ void ONPL::run() {
 
     const   __m512 total_vec = _mm512_set1_ps(total);
 
-    outDegree = G.getOutDegree();
-    outEdgeWeights = G.getOutEdgeWeights();
-    outEdges = G.getOutEdges();
+    outDegree = G->getOutDegree();
+    outEdgeWeights = G->getOutEdgeWeights();
+    outEdges = G->getOutEdges();
 
     index max_tid = omp_get_max_threads();
     index max_deg_arr[max_tid];
@@ -170,8 +170,8 @@ void ONPL::run() {
         max_deg_arr[tid] = max_deg_of_graph;
 #pragma omp for schedule(dynamic)
         for (index u = 0; u < z; ++u) {
-            volNode[u] += G.weightedDegree(u);
-            volNode[u] += G.weight(u, u); // consider self-loop twice
+            volNode[u] += G->weightedDegree(u);
+            volNode[u] += G->weight(u, u); // consider self-loop twice
             if (max_deg_arr[tid] < outDegree[u]) {
                 max_deg_arr[tid] = outDegree[u];
             }
@@ -913,21 +913,21 @@ void ONPL::run() {
             //                count vec_count = 0;
             if(fullVec) {
                 if(!isGraphWeighted && m_iter == 0) {
-                    G.balancedParallelForNodes(moveToNewCommunityWithDefaultWeight);
+                    G->balancedParallelForNodes(moveToNewCommunityWithDefaultWeight);
                     //                        ++vec_count;
                 } else if(isGraphWeighted && m_iter == 0){
-                    G.balancedParallelForNodes(tryVecMove);
-                    //                        G.balancedParallelForNodes(tryMove);
+                    G->balancedParallelForNodes(tryVecMove);
+                    //                        G->balancedParallelForNodes(tryMove);
                     //                        ++vec_count;
                 } else/* if(isGraphWeighted)*/{
-                    //                        G.balancedParallelForNodes(reducedTryMove);
-                    G.balancedParallelForNodes(tryMove);
+                    //                        G->balancedParallelForNodes(reducedTryMove);
+                    G->balancedParallelForNodes(tryMove);
                     //                        ++vec_count;
                 }
             } else {
 #pragma omp parallel for schedule(guided)
                 for (node uv = 0; uv < z; ++uv) {
-                    if (G.hasNode(uv)) {
+                    if (G->hasNode(uv)) {
                         if (outDegree[uv] >= 16) {
                             if (m_iter == 0 && !isGraphWeighted && iter == 0) {
                                 moveToNewCommunityWithDefaultWeight(uv);
@@ -948,7 +948,7 @@ void ONPL::run() {
                     }
                 }
             }
-            //G.balancedParallelForNodes(tryMove);
+            //G->balancedParallelForNodes(tryMove);
 
             if (moved) change = true;
 
@@ -961,7 +961,7 @@ void ONPL::run() {
 #if CONFLICT_DETECT
             clock_gettime(CLOCK_REALTIME, &end_move);
             double elapsed_move_time = ((end_move.tv_sec * 1000 + (end_move.tv_nsec / 1.0e6)) - (start_move.tv_sec * 1000 + (start_move.tv_nsec / 1.0e6)));
-            f_conflict_log << m_iter << "," << iter << "," << z << "," << G.numberOfEdges() << "," << conflict_community << "," << elapsed_move_time << std::endl;
+            f_conflict_log << m_iter << "," << iter << "," << z << "," << G->numberOfEdges() << "," << conflict_community << "," << elapsed_move_time << std::endl;
 #endif
             //                new_mod = modularity.getQuality(zeta, G);
         } while (moved /*&& (new_mod - old_mod)>0.000001*/ && (iter < maxIter) && handler.isRunning());
@@ -1008,7 +1008,7 @@ void ONPL::run() {
 
         clock_gettime(CLOCK_REALTIME, &c_start);
         //
-        std::pair<Graph, std::vector<node>> coarsened = coarsen(G, zeta);	// coarsen graph according to communitites
+        std::pair<Graph, std::vector<node>> coarsened = coarsen(*G, zeta);	// coarsen graph according to communitites
         //
         clock_gettime(CLOCK_REALTIME, &c_end);
         double coarsen_time = ((c_end.tv_sec * 1000 + (c_end.tv_nsec / 1.0e6)) - (c_start.tv_sec * 1000 + (c_start.tv_nsec / 1.0e6)));
