@@ -139,6 +139,8 @@ void ONLP::run() {
         runtime.stop();
         this->timing.push_back(runtime.elapsedMilliseconds());
         DEBUG("[DONE] LabelPropagation: iteration #" , nIterations , " - updated " , nUpdated , " labels, time spent: " , runtime.elapsedTag());
+        std::cout<< "[DONE] LabelPropagation: iteration #" << nIterations  << " - updated "
+            << nUpdated << " labels, time spent: " << runtime.elapsedTag() << std::endl;
 
     } // end while
     for (index i=0; i<z; ++i) {
