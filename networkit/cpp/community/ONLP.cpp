@@ -181,7 +181,9 @@ void ONLP::run() {
 
                 // get heaviest label
                 label heaviest = -1;
+                label heaviest2 = -1;
                 f_weight _heavyWeight = -1;
+                f_weight _heavyWeight2 = -1;
                 label lv = data[v];
                 for (auto m : labelWeights2) {
                     label lw = m.first;
@@ -190,6 +192,14 @@ void ONLP::run() {
                         _heavyWeight = m.second;
                     }
                 }
+                for (int i = 0; i < _cnt; ++i) {
+                    label lw = uniqueLabels[tid][i];
+                    if (labelWeights[tid][lw] > _heavyWeight2) {
+                        heaviest2 = lw;
+                        _heavyWeight2 = labelWeights[tid][lw];
+                    }
+                }
+                assert(heaviest2 == heaviest);
                 if (heaviest != -1 && lv != heaviest) { // UPDATE
                     data[v] = heaviest; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
