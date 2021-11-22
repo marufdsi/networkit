@@ -110,9 +110,6 @@ void ONLP::run() {
 //                std::vector<f_weight>labelWeights(omega, 0);
 //                std::vector<f_weight>uniqueLabels(omega, 0);
                 index _cnt = 0;
-                if(v >= outEdges.size()){
-                    std::cout<< "[" << v <<"] vertex can not be bigger than out edge size: " << outEdges.size() << std::endl;
-                }
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
                     f_weight weight = isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
