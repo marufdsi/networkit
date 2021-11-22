@@ -204,6 +204,10 @@ void ONLP::run() {
                         heaviest2 = lw;
                         _heavyWeight2 = labelWeights[tid][lw];
                     }
+                    if ((labelWeights[tid][lw] == _heavyWeight2) && (heaviest2 > lw)) {
+                        heaviest2 = lw;
+                        _heavyWeight2 = labelWeights[tid][lw];
+                    }
                 }
                 if(heaviest2 != heaviest){
                     std::cout<<"[" << v << "] Wrong neighbor label: " << heaviest2 << " weight: "
