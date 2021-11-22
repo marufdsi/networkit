@@ -101,25 +101,28 @@ void ONLP::run() {
 //        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
-#pragma omp parallel for schedule(guided)
-        for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
+//#pragma omp parallel for schedule(guided)
+//        for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
+            G->balancedParallelForNodes([&](node v){
             if (G->hasNode(v) && (activeNodes[v]) && (G->degree(v) > 0)) {
                 index tid = omp_get_thread_num();
-                for (int i = 0; i < outEdges[v].size(); ++i) {
-                    node w = outEdges[v][i];
+                G->forNeighborsOf(v, [&](node w, edgeweight weight) {
+//                for (int i = 0; i < outEdges[v].size(); ++i) {
+//                    node w = outEdges[v][i];
                     label lw = data[w];
                     labelWeights[tid][lw] = -1;
-                }
+                });
                 index _cnt = 0;
-                for (int i = 0; i < outEdges[v].size(); ++i) {
-                    node w = outEdges[v][i];
+                G->forNeighborsOf(v, [&](node w, edgeweight weight) {
+//                for (int i = 0; i < outEdges[v].size(); ++i) {
+//                    node w = outEdges[v][i];
                     label lw = data[w];
                     if (labelWeights[tid][lw] == -1) {
                         labelWeights[tid][lw] = 0;
                         uniqueLabels[tid][_cnt++] = lw;
                     }
                     labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
-                }
+                });
 
                 // get heaviest label
                 label heaviest = -1;
@@ -135,20 +138,19 @@ void ONLP::run() {
                 if (heaviest != -1 && lv != heaviest) { // UPDATE
                     data[v] = heaviest; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
-                    for (int i = 0; i < outEdges[v].size(); ++i) {
-                        node u = outEdges[v][i];
+                    G->forNeighborsOf(v, [&](node u) {
+//                    for (int i = 0; i < outEdges[v].size(); ++i) {
+//                        node u = outEdges[v][i];
                         activeNodes[u] = true;
-                    }
+                    });
                 } else {
                     activeNodes[v] = false;
                 }
 
             } else {
                 // node is isolated
-                if(!G->hasNode(v))
-                    std::cout<< v << " does not exist!!!" << std::endl;
             }
-        }
+        });
 
         // for each while loop iteration...
 
