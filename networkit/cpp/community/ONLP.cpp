@@ -81,9 +81,9 @@ void ONLP::run() {
     }
 
     std::vector<std::vector<f_weight> >labelWeights(Aux::getCurrentNumberOfThreads(), std::vector<f_weight>(omega));
-    std::vector<std::vector<f_weight> >uniqueLabels(Aux::getCurrentNumberOfThreads(), std::vector<f_weight>(omega));
+    std::vector<std::vector<f_weight> >uniqueLabels(Aux::getCurrentNumberOfThreads(), std::vector<f_weight>(z));
 
-    std::cout<< "maxIterations: " << maxIterations << std::endl;
+    std::cout<< "maxIterations: " << maxIterations << " max threads: " << Aux::getCurrentNumberOfThreads() << std::endl;
     // propagate labels
     while ((nUpdated > this->updateThreshold)  && (nIterations < maxIterations)) { // as long as a label has changed... or maximum iterations reached
         runtime.start();
@@ -99,6 +99,12 @@ void ONLP::run() {
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
                     label lw = data[w];
+                    if(tid >= Aux::getCurrentNumberOfThreads()){
+                        std::cout<< "[" << tid <<"] Tid can not be bigger than max tid: " << Aux::getCurrentNumberOfThreads() << std::endl;
+                    }
+                    if(lw >= omega){
+                        std::cout<< "[" << lw <<"] label can not be bigger than omega: " << omega << std::endl;
+                    }
                     labelWeights[tid][lw] = 0;
                 }
 //                std::vector<f_weight>labelWeights(omega, 0);
