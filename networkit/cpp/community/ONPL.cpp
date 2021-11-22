@@ -259,6 +259,7 @@ namespace NetworKit {
         }*/
         ///
 
+        std::cout<<"[" << m_iter << "] run move phase" << std::endl;
         /********/
         auto moveToNewCommunity = [&](node u) {
 
