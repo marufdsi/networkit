@@ -113,14 +113,14 @@ void ONLP::run() {
                 index _cnt = 0;
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
-                    if(v != w) {
+//                    if(v != w) {
                         label lw = data[w];
                         if (labelWeights[tid][lw] == -1) {
                             labelWeights[tid][lw] = 0;
                             uniqueLabels[tid][_cnt++] = lw;
                         }
                         labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
-                    }
+//                    }
                 }
 
                 // get heaviest label
