@@ -32,6 +32,7 @@ networkit_add_module(community
 	OVPL.cpp
 	MPLM.cpp
 	OPLM.cpp
+	ONPL.cpp
     ParallelAgglomerativeClusterer.cpp
     PartitionFragmentation.cpp
     PartitionHubDominance.cpp
