@@ -987,6 +987,7 @@ namespace NetworKit {
                                     moveToNewCommunityWithDefaultWeight(uv);
 //                                    ++vec_count;
                                 } else if (m_iter == 0 && isGraphWeighted) {
+                                    std::cout<<"First iteration has weighted graph" << std::endl;
                                     moveToNewCommunity(uv);
 //                                    ++vec_count;
                                 } else {
