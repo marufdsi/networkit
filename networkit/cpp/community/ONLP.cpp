@@ -115,8 +115,12 @@ void ONLP::run() {
 
                 // get heaviest label
                 label heaviest = -1;
+                f_weight _heavyWeight = -1;
                 for (int i = 0; i < _cnt; ++i) {
-                    heaviest = labelWeights[tid][uniqueLabels[tid][i]] > heaviest ? labelWeights[tid][uniqueLabels[tid][i]] : heaviest;
+                    if(_heavyWeight < labelWeights[tid][uniqueLabels[tid][i]]){
+                        heaviest = uniqueLabels[tid][i];
+                        _heavyWeight = labelWeights[tid][uniqueLabels[tid][i]];
+                    }
                 }
                 if (heaviest >-1 && data[v] != heaviest) { // UPDATE
                     data[v] = heaviest; //result[v] = heaviest;
@@ -126,6 +130,7 @@ void ONLP::run() {
                         activeNodes[u] = true;
                     }
                 } else {
+                    std::cout<< "[" << v << "] weight" << data[v]  << heaviest << std::endl;
                     activeNodes[v] = false;
                 }
 
