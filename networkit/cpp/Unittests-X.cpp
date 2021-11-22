@@ -176,9 +176,9 @@ int main(int argc, char *argv[]) {
         _inputMethod = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
     std::cout<<"Input Method:" << _inputMethod << std::endl;
-    index _iterations = 25;
+    uint64_t _iterations = 25;
     if (argc > argi) {
-        _iterations = (index)std::strtol(argv[argi++], (char**)NULL, 10);
+        _iterations = (uint64_t)std::strtol(argv[argi++], (char**)NULL, 10);
     }
     std::cout<<"Iterations:" << _iterations << std::endl;
     bool fullVec = false;
@@ -565,7 +565,7 @@ int main(int argc, char *argv[]) {
         std::cout << "***** Legacy PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
-            PLP lp(gCopy, none, _iterations);
+            PLP lp(gCopy, std::numeric_limits<uint64_t>::max(), _iterations);
 #if POWER_LOG
             //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
             rapl_sysfs_init();
@@ -623,7 +623,7 @@ int main(int argc, char *argv[]) {
         std::cout << "***** Modified PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
-            ONLP onlp(gCopy, none, _iterations);
+            ONLP onlp(gCopy, std::numeric_limits<uint64_t>::max(), _iterations);
 #if POWER_LOG
             //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
             rapl_sysfs_init();
