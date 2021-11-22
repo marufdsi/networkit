@@ -176,9 +176,9 @@ int main(int argc, char *argv[]) {
         _inputMethod = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
     std::cout<<"Input Method:" << _inputMethod << std::endl;
-    count _iterations = 25;
+    index _iterations = 25;
     if (argc > argi) {
-        _iterations = (int)std::strtol(argv[argi++], (char**)NULL, 10);
+        _iterations = (index)std::strtol(argv[argi++], (char**)NULL, 10);
     }
     std::cout<<"Iterations:" << _iterations << std::endl;
     bool fullVec = false;
@@ -562,6 +562,64 @@ int main(int argc, char *argv[]) {
         std::cout << "number of clusters: " << mplm_subsets << std::endl;
         std::cout << "modularity: " << mplm_mod << std::endl;
     } else if(version == 4) {
+        std::cout << "***** Legacy PLP *****" << std::endl;
+        for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
+            Graph gCopy = G;
+            PLP lp(gCopy, none, _iterations);
+#if POWER_LOG
+            //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
+            rapl_sysfs_init();
+            rapl_sysfs_before();
+#endif
+            //            clock_gettime(CLOCK_MONOTONIC, &start_modified);
+            clock_gettime(CLOCK_REALTIME, &start);
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
+            lp.run();
+            if (k>=SKIP_RUN) {
+                //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
+                clock_gettime(CLOCK_REALTIME, &end);
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_end);
+                long seconds = end.tv_sec - start.tv_sec;
+                long nanoseconds = end.tv_nsec - start.tv_nsec;
+                double elapsed = seconds + nanoseconds*1e-9;
+                seconds = cpu_end.tv_sec - cpu_start.tv_sec;
+                nanoseconds = cpu_end.tv_nsec - cpu_start.tv_nsec;
+                double cpu_elapsed = seconds + nanoseconds*1e-9;
+#if POWER_LOG
+                rapl_sysfs_after();
+                // Results
+                rapl_sysfs_results("PLP", _graphName, std::stoi(ppn), 1, architecture);
+#endif
+
+                Partition s_zeta = lp.getPartition();
+                count comm = s_zeta.numberOfSubsets();
+                double mod = modularity.getQuality(s_zeta, G);
+                auto times = lp.getTiming();
+                count run_time = 0;
+                for (count t : times) {
+                    run_time += t;
+                }
+
+#if OVERALL_LOG
+                graph_log << _graphName << "," << "PLP" << "," << z << "," << edges << ","
+                          << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
+                          << (_iterations) << "," << 0 << "," << run_time << ","
+                          << 0 << "," << 0 << "," << ppn << "," << "LL"
+                          << "," << 0 << "," << 0 << std::endl;
+#endif
+                et_mplm += cpu_elapsed;
+                mplm_subsets += comm;
+                mplm_mod += mod;
+            }
+            //            std::cout<< "[" << k << "] ******************* Successfully Done ************************ " << std::endl;
+        }
+        et_mplm = et_mplm/NUM_RUN;
+        mplm_subsets = mplm_subsets/NUM_RUN;
+        mplm_mod = mplm_mod/NUM_RUN;
+        std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
+        std::cout << "number of clusters: " << mplm_subsets << std::endl;
+        std::cout << "modularity: " << mplm_mod << std::endl;
+    } else if(version == 5) {
         std::cout << "***** Modified PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
