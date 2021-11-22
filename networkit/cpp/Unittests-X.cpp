@@ -85,7 +85,7 @@
 #endif
 
 #ifndef POWER_LOG
-#define POWER_LOG false
+#define POWER_LOG true
 #endif
 
 #ifndef SKYLAKE_X_LOG
