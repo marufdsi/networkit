@@ -155,7 +155,7 @@ void ONLP::run() {
 
                 // weigh the labels in the neighborhood of v
                 G->forNeighborsOf(v, [&](node w, edgeweight weight) {
-                    label lw = result.subsetOf(w);
+                    label lw = data[w]; //result.subsetOf(w);
                     labelWeights[lw] += weight; // add weight of edge {v, w}
                 });
 
@@ -165,8 +165,9 @@ void ONLP::run() {
                                                   [](const std::pair<label, edgeweight>& p1, const std::pair<label, edgeweight>& p2) {
                                                       return p1.second < p2.second;})->first;
 
-                if (result.subsetOf(v) != heaviest) { // UPDATE
-                    result.moveToSubset(heaviest,v); //result[v] = heaviest;
+                if (/*result.subsetOf(v)*/ data[v] != heaviest) { // UPDATE
+//                    result.moveToSubset(heaviest,v); //result[v] = heaviest;
+                    data[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
                     G->forNeighborsOf(v, [&](node u) {
                         activeNodes[u] = true;
@@ -189,7 +190,7 @@ void ONLP::run() {
 
     } // end while
     for (index i=0; i<z; ++i) {
-//        result.moveToSubset(data[i], i);
+        result.moveToSubset(data[i], i);
     }
     hasRun = true;
 }
