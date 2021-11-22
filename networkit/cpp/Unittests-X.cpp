@@ -385,7 +385,6 @@ int main(int argc, char *argv[]) {
                 onpl_subsets += comm;
                 onpl_mod += mod;
             }
-            free(vPLM);
             //            std::cout<< "[" << k << "] ******************* Successfully Done ************************ " << std::endl;
         }
         et_onpl = et_onpl/NUM_RUN;
