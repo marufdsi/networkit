@@ -70,7 +70,7 @@ void PLP::run() {
         runtime.start();
         nIterations += 1;
         DEBUG("[BEGIN] LabelPropagation: iteration #" , nIterations);
-        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
+//        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
 
@@ -111,8 +111,7 @@ void PLP::run() {
         runtime.stop();
         this->timing.push_back(runtime.elapsedMilliseconds());
         DEBUG("[DONE] LabelPropagation: iteration #" , nIterations , " - updated " , nUpdated , " labels, time spent: " , runtime.elapsedTag());
-        std::cout<< "[DONE] LabelPropagation: iteration #" << nIterations  << " - updated "
-                  << nUpdated << " labels, time spent: " << runtime.elapsedTag() << std::endl;
+//        std::cout<< "[DONE] LabelPropagation: iteration #" << nIterations  << " - updated " << nUpdated << " labels, time spent: " << runtime.elapsedTag() << std::endl;
 
     } // end while
     hasRun = true;
