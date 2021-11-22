@@ -88,9 +88,9 @@ void ONLP::run() {
         std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
-        G->balancedParallelForNodes([&](node v){
+#pragma omp parallel for schedule(guided)
+        for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
             if ((activeNodes[v]) && (G->degree(v) > 0)) {
-
                 std::vector<f_weight>labelWeights(omega, 0);
                 std::vector<f_weight>uniqueLabels(omega, 0);
                 index _cnt = 0;
@@ -124,7 +124,7 @@ void ONLP::run() {
             } else {
                 // node is isolated
             }
-        });
+        }
 
         // for each while loop iteration...
 
