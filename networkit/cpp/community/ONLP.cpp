@@ -129,11 +129,9 @@ void ONLP::run() {
                 label lv = data[v];
                 for (int i = 0; i < _cnt; ++i) {
                     label lw = uniqueLabels[tid][i];
-                    if(lw != lv) {
-                        if (labelWeights[tid][lw] > _heavyWeight) {
-                            heaviest = lw;
-                            _heavyWeight = labelWeights[tid][lw];
-                        }
+                    if (labelWeights[tid][lw] > _heavyWeight) {
+                        heaviest = lw;
+                        _heavyWeight = labelWeights[tid][lw];
                     }
                 }
                 if (_heavyWeight > 0 && lv != heaviest) { // UPDATE
