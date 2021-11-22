@@ -593,7 +593,7 @@ int main(int argc, char *argv[]) {
 
                 Partition s_zeta = onlp.getPartition();
                 count comm = s_zeta.numberOfSubsets();
-                double mod = modularity.getQuality(s_zeta, g);
+                double mod = modularity.getQuality(s_zeta, G);
                 auto times = onlp.getTiming();
                 count run_time = 0;
                 for (count t : times) {
