@@ -130,7 +130,6 @@ void ONLP::run() {
                         activeNodes[u] = true;
                     }
                 } else {
-                    std::cout<< "[" << v << "] weight" << data[v]  << heaviest << std::endl;
                     activeNodes[v] = false;
                 }
 
