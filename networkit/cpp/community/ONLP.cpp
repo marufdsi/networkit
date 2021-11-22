@@ -107,6 +107,8 @@ void ONLP::run() {
                     }
                     labelWeights[tid][lw] = 0;
                 }
+                activeNodes[v] = false;
+                continue;
 //                std::vector<f_weight>labelWeights(omega, 0);
 //                std::vector<f_weight>uniqueLabels(omega, 0);
                 index _cnt = 0;
