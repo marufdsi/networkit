@@ -83,7 +83,7 @@ void ONLP::run() {
     std::vector<std::vector<f_weight> >labelWeights(omp_get_max_threads(), std::vector<f_weight>(omega));
     std::vector<std::vector<f_weight> >uniqueLabels(omp_get_max_threads(), std::vector<f_weight>(z));
 
-    std::cout<< "maxIterations: " << maxIterations << " max threads: " << Aux::getCurrentNumberOfThreads() << std::endl;
+    std::cout<< "maxIterations: " << maxIterations << " max threads: " << omp_get_max_threads() << std::endl;
     // propagate labels
     while ((nUpdated > this->updateThreshold)  && (nIterations < maxIterations)) { // as long as a label has changed... or maximum iterations reached
         runtime.start();
@@ -96,32 +96,16 @@ void ONLP::run() {
         for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
             if ((activeNodes[v]) && (G->degree(v) > 0)) {
                 index tid = omp_get_thread_num();
-                if(tid >= Aux::getCurrentNumberOfThreads()){
-                    std::cout<< "[" << tid <<"] Tid can not be bigger than max tid: " << Aux::getCurrentNumberOfThreads() << std::endl;
-                }
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
                     label lw = data[w];
-                    if(lw >= omega){
-                        std::cout<< "[" << lw <<"] label can not be bigger than omega: " << omega << std::endl;
-                    }
                     labelWeights[tid][lw] = 0;
                 }
-//                activeNodes[v] = false;
-//                continue;
-//                std::vector<f_weight>labelWeights(omega, 0);
-//                std::vector<f_weight>uniqueLabels(omega, 0);
                 index _cnt = 0;
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
                     f_weight weight = isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
                     label lw = data[w];
-                    if(lw >= omega){
-                        std::cout<< "[" << lw <<"] >>label can not be bigger than omega: " << omega << std::endl;
-                    }
-                    if(_cnt >= z){
-                        std::cout<< "[" << _cnt <<"] cnt can not be bigger than upper bound: " << z << std::endl;
-                    }
                     if(labelWeights[tid][lw] == 0){
                         uniqueLabels[tid][_cnt++] = lw;
                     }
@@ -132,9 +116,6 @@ void ONLP::run() {
                 // get heaviest label
                 label heaviest = -1;
                 for (int i = 0; i < _cnt; ++i) {
-                    if(uniqueLabels[tid][i] >= omega){
-                        std::cout<< "[" << uniqueLabels[tid][i] <<"] label can not be bigger than omega: " << omega << std::endl;
-                    }
                     heaviest = labelWeights[tid][uniqueLabels[tid][i]] > heaviest ? labelWeights[tid][uniqueLabels[tid][i]] : heaviest;
                 }
                 if (heaviest >-1 && data[v] != heaviest) { // UPDATE

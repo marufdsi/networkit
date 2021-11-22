@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
     /// Collect info from commandline arguments
     count argi = 1;
     std::string path = "";
-    std::cout<<"Params size:" << argc << std::endl;
+//    std::cout<<"Params size:" << argc << std::endl;
     if(argc>argi) {
         path = argv[argi++];
         std::cout << "Path: " << path << std::endl;
@@ -165,52 +165,50 @@ int main(int argc, char *argv[]) {
         Aux::setNumberOfThreads((int)std::strtol((th), (char**)NULL, 10));
 #endif
     }
-    std::cout<<"Threads:" << ppn << std::endl;
+//    std::cout<<"Threads:" << ppn << std::endl;
     int version = 0;
     if (argc > argi) {
         version = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
-    std::cout<<"Version:" << version << std::endl;
+//    std::cout<<"Version:" << version << std::endl;
     count _inputMethod = 1;
     if (argc > argi) {
         _inputMethod = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
-    std::cout<<"Input Method:" << _inputMethod << std::endl;
+//    std::cout<<"Input Method:" << _inputMethod << std::endl;
     uint64_t _iterations = 25;
     if (argc > argi) {
         _iterations = (uint64_t)std::strtol(argv[argi++], (char**)NULL, 10);
     }
-    std::cout<<"Iterations:" << _iterations << std::endl;
+//    std::cout<<"Iterations:" << _iterations << std::endl;
     bool fullVec = false;
     if (argc > argi) {
         fullVec = std::stoi(argv[argi++]);
     }
-    std::cout<<"FullVec:" << fullVec << std::endl;
+//    std::cout<<"FullVec:" << fullVec << std::endl;
     count architecture = 1;
     if (argc > argi) {
         architecture = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
-    std::cout<<"Architecture:" << architecture << std::endl;
+//    std::cout<<"Architecture:" << architecture << std::endl;
     bool refine = false;
     if (argc > argi) {
         refine = std::stoi(argv[argi++]);
     }
-    std::cout<<"refine:" << refine << std::endl;
+//    std::cout<<"refine:" << refine << std::endl;
     long cache_size = 25*1024*1024;
     if (argc > argi) {
         cache_size = std::strtol(argv[argi++], (char**)NULL, 10);
     }
-    std::cout<<"cache_size:" << cache_size << std::endl;
+//    std::cout<<"cache_size:" << cache_size << std::endl;
 
     /// Initialize reader
     SNAPGraphReader snapReader;
     METISGraphReader metisReader;
     Modularity modularity;
     std::string _graphName, dirName;
-    std::cout<<"Before Split:" << std::endl;
     std::vector<std::string>tokens = Aux::StringTools::split(path, '/');
     _graphName = Aux::StringTools::split(tokens[tokens.size()-1], '.')[0];
-    std::cout<<"After Split:" << std::endl;
     Graph G;
     if(_inputMethod == 1)
         G = snapReader.read(path);
