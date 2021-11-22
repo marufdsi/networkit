@@ -13,6 +13,7 @@
 #include <networkit/auxiliary/Random.hpp>
 #include <networkit/auxiliary/Timer.hpp>
 #include <networkit/community/ONLP.hpp>
+#include <iostream>
 #include <vector>
 
 namespace NetworKit {
