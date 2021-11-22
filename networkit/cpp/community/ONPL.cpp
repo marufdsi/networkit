@@ -129,7 +129,7 @@ void ONPL::run() {
 
     //        std::vector<std::vector<index > > community_counter = std::vector<std::vector<index > >(33,std::vector<index>(16, 0));
     //        count ittr_counter = 0;
-    const count *outDegree;
+    count *outDegree;
     posix_memalign((void **) &outDegree, alignment, z * sizeof(count));
     const std::vector<f_weight> *outEdgeWeights;
     const std::vector<node> *outEdges;
