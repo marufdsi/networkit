@@ -80,8 +80,8 @@ void ONLP::run() {
         data[i] = result.subsetOf(i);
     }
 
-    std::vector<std::vector<f_weight> >labelWeights(Aux::omp_get_num_threads(), std::vector<f_weight>(omega));
-    std::vector<std::vector<f_weight> >uniqueLabels(Aux::omp_get_num_threads(), std::vector<f_weight>(omega));
+    std::vector<std::vector<f_weight> >labelWeights(Aux::getCurrentNumberOfThreads(), std::vector<f_weight>(omega));
+    std::vector<std::vector<f_weight> >uniqueLabels(Aux::getCurrentNumberOfThreads(), std::vector<f_weight>(omega));
 
     std::cout<< "maxIterations: " << maxIterations << std::endl;
     // propagate labels
