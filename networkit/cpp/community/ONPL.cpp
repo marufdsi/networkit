@@ -979,7 +979,7 @@ namespace NetworKit {
                     for (node uv = 0; uv < z; ++uv) {
                         if (G->hasNode(uv)) {
                             if (outDegree[uv] >= 16) {
-                                if (m_iter == 0 && !isGraphWeighted && iter == 0) {
+                                /*if (m_iter == 0 && !isGraphWeighted && iter == 0) {
                                     moveToNewCommunityWithDefaultWeight(uv);
 //                                    ++vec_count;
                                 } else if (m_iter == 0 && !isGraphWeighted && iter > 0) {
@@ -992,8 +992,10 @@ namespace NetworKit {
 //                                    ++vec_count;
                                 } else {
                                     tryMove(uv);
-                                }
+                                }*/
+                                tryMove(uv);
                             } else {
+//                                std::cout<< "try Move called" <<std::endl;
                                 tryMove(uv);
                             }
                         }
