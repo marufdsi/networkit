@@ -130,7 +130,7 @@ void ONLP::run() {
                 for (int i = 0; i < _cnt; ++i) {
                     label lw = uniqueLabels[tid][i];
                     if(labelWeights[tid][lw] <=0){
-                        std::cout<< "Issues" << labelWeights[tid][lw] << endl;
+                        std::cout<< "Issues" << labelWeights[tid][lw] << std::endl;
                     }
                     if (labelWeights[tid][lw] > _heavyWeight) {
                         heaviest = lw;
