@@ -160,19 +160,25 @@ void ONLP::run() {
                     labelWeights[lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight; // add weight of edge {v, w}
                 }
 
-                // get heaviest label
-                label heaviest = std::max_element(labelWeights.begin(),
-                                                  labelWeights.end(),
-                                                  [](const std::pair<label, edgeweight>& p1, const std::pair<label, edgeweight>& p2) {
-                                                      return p1.second < p2.second;})->first;
 
-                if (/*result.subsetOf(v)*/ data[v] != heaviest) { // UPDATE
-//                    result.moveToSubset(heaviest,v); //result[v] = heaviest;
-                    data[v] = heaviest;
+                // get heaviest label
+                label heaviest = -1;
+                f_weight _heavyWeight = -1;
+                label lv = data[v];
+                for (auto m : labelWeights) {
+                    label lw = m->first;
+                    if (m->second > _heavyWeight) {
+                        heaviest = lw;
+                        _heavyWeight = m->second;
+                    }
+                }
+                if (heaviest != -1 && lv != heaviest) { // UPDATE
+                    data[v] = heaviest; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
-                    G->forNeighborsOf(v, [&](node u) {
+                    for (int i = 0; i < outEdges[v].size(); ++i) {
+                        node u = outEdges[v][i];
                         activeNodes[u] = true;
-                    });
+                    }
                 } else {
                     activeNodes[v] = false;
                 }
