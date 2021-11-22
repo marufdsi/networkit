@@ -154,10 +154,11 @@ void ONLP::run() {
                 std::map<label, double> labelWeights; // neighborLabelCounts maps label -> frequency in the neighbors
 
                 // weigh the labels in the neighborhood of v
-                G->forNeighborsOf(v, [&](node w, edgeweight weight) {
+                for (int i = 0; i < outEdges[v].size(); ++i) {
+                    node w = outEdges[v][i];
                     label lw = data[w]; //result.subsetOf(w);
-                    labelWeights[lw] += weight; // add weight of edge {v, w}
-                });
+                    labelWeights[lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight; // add weight of edge {v, w}
+                }
 
                 // get heaviest label
                 label heaviest = std::max_element(labelWeights.begin(),
