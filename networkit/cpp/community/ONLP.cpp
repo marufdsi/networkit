@@ -200,8 +200,8 @@ void ONLP::run() {
                     }
                 }
                 assert(heaviest2 == heaviest);
-                if (heaviest != -1 && lv != heaviest) { // UPDATE
-                    data[v] = heaviest; //result[v] = heaviest;
+                if (heaviest2 != -1 && lv != heaviest2) { // UPDATE
+                    data[v] = heaviest2; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
                     for (int i = 0; i < outEdges[v].size(); ++i) {
                         node u = outEdges[v][i];
