@@ -118,8 +118,13 @@ void ONPL::run() {
     // init communities to singletons
     Partition zeta(z);
     zeta.allToSingletons();
-    std::vector<index> _data = zeta.getVector();
+    std::vector<index> _dataV = zeta.getVector();
+    index *_data;
     index o = zeta.upperBound();
+    posix_memalign((void **) &_data, alignment, o * sizeof(index));
+    for (int i = 0; i < o; ++i) {
+        _data[i] = _dataV[i];
+    }
 
     // init graph-dependent temporaries
     std::vector<f_weight> volNode(z, 0.0);
@@ -572,9 +577,6 @@ void ONPL::run() {
         const   __m512i check_self_loop = _mm512_set1_epi32(u);
 //#pragma unroll
         for (i = 0; (i+16) <= _deg; i += 16) {
-            if(i>=z){
-                std::cout<< "outedge Problem found: " << i << " >= " << z << std::endl;
-            }
             //                __mmask16 mask_neighbor_exist = pow(2, ((neighbor_processed-i) >= 16 ? 16 : (neighbor_processed - i))) - 1;
             /// Load at most 16 neighbor vertices.
             __m512i v_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[i]);
@@ -1040,7 +1042,10 @@ void ONPL::run() {
     //        printf("[%d] move-phase time (%.4f secs)\n", m_iter, (double)(c_end - c_start) / CLOCKS_PER_SEC);
     //        timing["move"].push_back(timer.elapsedMilliseconds());
     timing["move"].push_back(m_time);
-    zeta.setVector(_data);
+    for (int i = 0; i < o; ++i) {
+        _dataV[i] = _data[i];
+    }
+    zeta.setVector(_dataV);
     double new_modularity = modularity.getQuality(zeta, *G);
     handler.assureRunning();
     /*if(m_iter > 1 && (new_modularity - old_modularity)<0.000001)
