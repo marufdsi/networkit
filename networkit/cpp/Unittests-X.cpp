@@ -163,7 +163,8 @@ int main(int argc, char *argv[]) {
         ppn = argv[argi++];
 #if THREAD_DEFINE
         omp_set_dynamic(0);
-        Aux::setNumberOfThreads((int)std::strtol((th), (char**)NULL, 10));
+        omp_set_num_threads((int)std::strtol((th), (char**)NULL, 10));
+//        Aux::setNumberOfThreads((int)std::strtol((th), (char**)NULL, 10));
 #endif
     }
 //    std::cout<<"Threads:" << ppn << std::endl;
