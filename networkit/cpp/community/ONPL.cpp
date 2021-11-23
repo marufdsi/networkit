@@ -621,11 +621,16 @@ void ONPL::run() {
             sint vertex_cnt = _mm_popcnt_u32((unsigned)conflict_comm_mask);
 
             if(vertex_cnt>0) {
+                __m512i tmp_C = C_vec;
                 C_vec = _mm512_mask_compress_epi32(set0, conflict_comm_mask, C_vec);
                 index *remaining_comm = (index *) &C_vec;
                 for (int j = 0; j < vertex_cnt; ++j) {
                     if(remaining_comm[j]>=z){
                         std::cout<< vertex_cnt << " : remaining Problem found: " << remaining_comm[j] << " >= " << z << std::endl;
+                        index *tmp_remaining_comm = (index *) &tmp_C;
+                        for (int kl = 0; kl < 16; ++kl) {
+                            std::cout<< kl << " : " << tmp_remaining_comm[kl] << std::nedl;
+                        }
                     }
                     pnt_affinity[remaining_comm[j]] += f_defaultEdgeWeight;
                 }
