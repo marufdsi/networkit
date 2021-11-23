@@ -106,7 +106,7 @@ std::tuple<count, count, index, count> METISParser::getHeader() {
             std::getline(this->graphFile, line);
         }
 
-        std::vector<uint64_t> tokens = parseLine(line);
+        std::vector<index> tokens = parseLine(line);
         n = tokens[0];
         m = tokens[1];
         if (tokens.size() == 2) {
