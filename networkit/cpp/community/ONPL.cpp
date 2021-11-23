@@ -542,9 +542,6 @@ void ONPL::run() {
     auto moveToNewCommunityWithDefaultWeight = [&](node u) {
         index tid = omp_get_thread_num();
         count neigh_counter = 0;
-        if(u>=z){
-            std::cout<< "outdegree Problem found: " << u << " >= " << z << std::endl;
-        }
         index _deg = outDegree[u];
         /// Pointer for neighbor vertices. We can access using edge index.
         const node *pnt_outEdges = &outEdges[u][0];
@@ -556,20 +553,11 @@ void ONPL::run() {
         /// Initialize affinity with zero. May be we can use intel intrinsic to do that.
         index i=0;
         for (i = 0; (i+16) <= _deg; i += 16) {
-            if(i>=z){
-                std::cout<< "outedge Problem found: " << i << " >= " << z << std::endl;
-            }
             __m512i v_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[i]);
             __m512i C_vec = _mm512_i32gather_epi32(v_vec, &_data[0], 4);
             _mm512_i32scatter_ps(&pnt_affinity[0], C_vec, fl_set1, 4);
         }
         for (index edge= i; edge < _deg; ++edge) {
-            if(i>=z){
-                std::cout<< "outedge Problem found: " << i << " >= " << z << std::endl;
-            }
-            if(pnt_outEdges[edge]>=z){
-                std::cout<< "_data Problem found: " << pnt_outEdges[edge] << " >= " << z << std::endl;
-            }
             pnt_affinity[_data[pnt_outEdges[edge]]] = -1.0;
         }
         pnt_affinity[_data[u]] = 0;
@@ -604,9 +592,6 @@ void ONPL::run() {
             sint neigh_cnt = _mm_popcnt_u32((unsigned) _mm512_kand(mask, new_comm_mask));
             /// Store distinct neighbor community
             //                _mm512_mask_storeu_epi32(&pnt_neigh_comm[neigh_counter], _mm512_kand(mask, new_comm_mask), distinct_comm);
-            if(neigh_counter>=max_deg_of_graph){
-                std::cout<< "Problem found: " << neigh_counter << " >= " << max_deg_of_graph << std::endl;
-            }
             _mm512_storeu_si512(&pnt_neigh_comm[neigh_counter], distinct_comm);
             /// Increment neighbor community count
             neigh_counter += neigh_cnt;
@@ -628,18 +613,6 @@ void ONPL::run() {
                 C_vec = _mm512_mask_compress_epi32(set0, conflict_comm_mask, C_vec);
                 index *remaining_comm = (index *) &C_vec;
                 for (int j = 0; j < vertex_cnt; ++j) {
-                    if(remaining_comm[j]>=z){
-                        std::cout<< "[" << i <<"] " << vertex_cnt << " : remaining Problem found: "
-                                  << remaining_comm[j] << " >= " << z << ", degree" << _deg
-                                  << std::endl;
-                        index *tmp_remaining_comm = (index *) &tmp_C;
-                        index *tmp_vec = (index *) &v_vec;
-                        for (int kl = 0; kl < 16; ++kl) {
-                            std::cout<< kl << " : " << tmp_remaining_comm[kl] << ", " << tmp_vec[kl]
-                                      << " vec: " << pnt_outEdges[i+kl]
-                                      << " comm: " << _data[pnt_outEdges[i+kl]] << std::endl;
-                        }
-                    }
                     pnt_affinity[remaining_comm[j]] += f_defaultEdgeWeight;
                 }
             }
@@ -647,18 +620,12 @@ void ONPL::run() {
 
         pnt_outEdges = &outEdges[u][0];
         for (index j= i; j < _deg; ++j) {
-            if(j>=z){
-                std::cout<< "j Problem found: " << j << " >= " << z << std::endl;
-            }
             node v = pnt_outEdges[j];
             if (u != v) {
                 index C = _data[v];
                 if (pnt_affinity[C] == -1) {
                     /// found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                     pnt_affinity[C] = 0;
-                    if(neigh_counter>=max_deg_of_graph){
-                        std::cout<< "Problem found: " << neigh_counter << " >= " << max_deg_of_graph << std::endl;
-                    }
                     pnt_neigh_comm[neigh_counter++] = C;
                 }
                 pnt_affinity[C] += f_defaultEdgeWeight;
@@ -682,9 +649,6 @@ void ONPL::run() {
         f_weight coefficient = (this->gamma * volN)/divisor;
         const   __m512 coefficient_vec = _mm512_set1_ps(coefficient);
         for (i=0; (i+16) <= neigh_counter; i += 16) {
-            if(i>=z){
-                std::cout<< "neighcounter Problem found: " << i << " >= " << z << std::endl;
-            }
             /// Load at most 16 neighbor community.
             __m512i D_vec = _mm512_loadu_si512((__m512i *) &pnt_neigh_comm[i]);
             /// Mask to find C != D
