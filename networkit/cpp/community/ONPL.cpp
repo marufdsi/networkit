@@ -629,7 +629,7 @@ void ONPL::run() {
                         std::cout<< vertex_cnt << " : remaining Problem found: " << remaining_comm[j] << " >= " << z << std::endl;
                         index *tmp_remaining_comm = (index *) &tmp_C;
                         for (int kl = 0; kl < 16; ++kl) {
-                            std::cout<< kl << " : " << tmp_remaining_comm[kl] << std::nedl;
+                            std::cout<< kl << " : " << tmp_remaining_comm[kl] << std::endl;
                         }
                     }
                     pnt_affinity[remaining_comm[j]] += f_defaultEdgeWeight;
