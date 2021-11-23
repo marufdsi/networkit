@@ -626,7 +626,9 @@ void ONPL::run() {
                 index *remaining_comm = (index *) &C_vec;
                 for (int j = 0; j < vertex_cnt; ++j) {
                     if(remaining_comm[j]>=z){
-                        std::cout<< vertex_cnt << " : remaining Problem found: " << remaining_comm[j] << " >= " << z << std::endl;
+                        std::cout<< "[" << i <<"] " << vertex_cnt << " : remaining Problem found: "
+                                  << remaining_comm[j] << " >= " << z << ", degree" << _deg
+                                  << std::endl;
                         index *tmp_remaining_comm = (index *) &tmp_C;
                         for (int kl = 0; kl < 16; ++kl) {
                             std::cout<< kl << " : " << tmp_remaining_comm[kl]
