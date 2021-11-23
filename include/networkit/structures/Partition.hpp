@@ -254,7 +254,13 @@ public:
      *
      * @return vector containing information about partitions.
      */
-    const std::vector<index> &getVector() const;
+    std::vector<index> &getVector() const;
+
+    /**
+     * Set the actual vector representing the partition data structure.
+     *
+     */
+    void setVector(std::vector<index> _data) const;
 
     /**
      * @return the subsets of the partition as a set of sets.

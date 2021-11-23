@@ -118,6 +118,7 @@ void ONPL::run() {
     // init communities to singletons
     Partition zeta(z);
     zeta.allToSingletons();
+    std::vector<index> _data = zeta.getVector();
     index o = zeta.upperBound();
 
     // init graph-dependent temporaries
@@ -230,13 +231,13 @@ void ONPL::run() {
         index i = 0;
         for (i = 0; (i+16) <= _deg; i += 16) {
             __m512i v_vec = _mm512_loadu_si512((__m512i * ) & pnt_outEdges[i]);
-            __m512i C_vec = _mm512_i32gather_epi32(v_vec, &zeta[0], 4);
+            __m512i C_vec = _mm512_i32gather_epi32(v_vec, &_data[0], 4);
             _mm512_i32scatter_ps(&pnt_affinity[0], C_vec, fl_set1, 4);
         }
         for (index edge = i; edge < _deg; ++edge) {
-            pnt_affinity[zeta[pnt_outEdges[edge]]] = -1.0;
+            pnt_affinity[_data[pnt_outEdges[edge]]] = -1.0;
         }
-        pnt_affinity[zeta[u]] = 0;
+        pnt_affinity[_data[u]] = 0;
         /// protect u != v condition
         const   __m512i check_self_loop = _mm512_set1_epi32(u);
 #pragma unroll
@@ -250,7 +251,7 @@ void ONPL::run() {
             /// Mask to find u != v
             __mmask16 self_loop_mask = _mm512_cmpneq_epi32_mask(check_self_loop, v_vec);
             /// Gather community of the neighbor vertices.
-            __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &zeta[0], 4);
+            __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &_data[0], 4);
             sint vertex_cnt = _mm_popcnt_u32((unsigned)self_loop_mask);
             //                #if CONFLICT_DETECT
             //                    reiterate_conflict += vertex_cnt;
@@ -294,7 +295,7 @@ void ONPL::run() {
         for (index j= i; j < _deg; ++j) {
             node v = pnt_outEdges[j];
             if (u != v) {
-                index C = zeta[v];
+                index C = _data[v];
                 if (pnt_affinity[C] == -1) {
                     /// found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                     pnt_affinity[C] = 0;
@@ -308,7 +309,7 @@ void ONPL::run() {
         index best = none;
         f_weight deltaBest = -1;
 
-        index C = zeta[u];
+        index C = _data[u];
         f_weight affinityC = pnt_affinity[C];
         f_weight volN = volNode[u];
         f_weight volCommunityMinusNode_C = volCommunity[C] - volN;
@@ -360,7 +361,7 @@ void ONPL::run() {
             assert (best != C && best != none);// do not "move" to original cluster
                                                //#pragma omp atomic update
                                                //                move_count += 1;
-            zeta[u] = best; // move to best cluster
+            _data[u] = best; // move to best cluster
             // TRACE("node " , u , " moved");
 
             // mod update
@@ -396,13 +397,13 @@ void ONPL::run() {
         /// Initialize affinity.
         for (i = 0; (i+16) <= _deg; i += 16) {
             __m512i v_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[i]);
-            __m512i C_vec = _mm512_i32gather_epi32(v_vec, &zeta[0], 4);
+            __m512i C_vec = _mm512_i32gather_epi32(v_vec, &_data[0], 4);
             _mm512_i32scatter_ps(&pnt_affinity[0], C_vec, fl_set1, 4);
         }
         for (index edge= i; edge < _deg; ++edge) {
-            pnt_affinity[zeta[pnt_outEdges[edge]]] = -1.0;
+            pnt_affinity[_data[pnt_outEdges[edge]]] = -1.0;
         }
-        pnt_affinity[zeta[u]] = 0;
+        pnt_affinity[_data[u]] = 0;
         /// protect u != v condition
         const   __m512i check_self_loop = _mm512_set1_epi32(u);
 #pragma unroll
@@ -414,7 +415,7 @@ void ONPL::run() {
             /// Mask to find u != v
             const __mmask16 self_loop_mask = _mm512_cmpneq_epi32_mask(check_self_loop, v_vec);
             /// Gather community of the neighbor vertices.
-            __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &zeta[0], 4);
+            __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &_data[0], 4);
             /// Gather affinity of the corresponding community.
             __m512 affinity_vec = _mm512_mask_i32gather_ps(fl_set0, self_loop_mask, C_vec, &pnt_affinity[0], 4);
 
@@ -461,7 +462,7 @@ void ONPL::run() {
         for (index j= i; j < _deg; ++j) {
             node v = pnt_outEdges[j];
             if (u != v) {
-                index C = zeta[v];
+                index C = _data[v];
                 if (pnt_affinity[C] == -1) {
                     /// found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                     pnt_affinity[C] = 0;
@@ -473,7 +474,7 @@ void ONPL::run() {
         /*****/
         index best = none;
         f_weight deltaBest = -1;
-        index C = zeta[u];
+        index C = _data[u];
         f_weight affinityC = pnt_affinity[C];
         f_weight volN = volNode[u];
         f_weight volCommunityMinusNode_C = volCommunity[C] - volN;
@@ -520,7 +521,7 @@ void ONPL::run() {
 
         if (deltaBest > 0) { // if modularity improvement possible
             assert (best != C && best != none);// do not "move" to original cluster
-            zeta[u] = best; // move to best cluster
+            _data[u] = best; // move to best cluster
             // mod update
             f_weight volN = 0.0;
             volN = volNode[u];
@@ -554,7 +555,7 @@ void ONPL::run() {
                 std::cout<< "outedge Problem found: " << i << " >= " << z << std::endl;
             }
             __m512i v_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[i]);
-            __m512i C_vec = _mm512_i32gather_epi32(v_vec, &zeta[0], 4);
+            __m512i C_vec = _mm512_i32gather_epi32(v_vec, &_data[0], 4);
             _mm512_i32scatter_ps(&pnt_affinity[0], C_vec, fl_set1, 4);
         }
         for (index edge= i; edge < _deg; ++edge) {
@@ -562,11 +563,11 @@ void ONPL::run() {
                 std::cout<< "outedge Problem found: " << i << " >= " << z << std::endl;
             }
             if(pnt_outEdges[edge]>=z){
-                std::cout<< "zeta Problem found: " << pnt_outEdges[edge] << " >= " << z << std::endl;
+                std::cout<< "_data Problem found: " << pnt_outEdges[edge] << " >= " << z << std::endl;
             }
-            pnt_affinity[zeta[pnt_outEdges[edge]]] = -1.0;
+            pnt_affinity[_data[pnt_outEdges[edge]]] = -1.0;
         }
-        pnt_affinity[zeta[u]] = 0;
+        pnt_affinity[_data[u]] = 0;
         /// protect u != v condition
         const   __m512i check_self_loop = _mm512_set1_epi32(u);
 //#pragma unroll
@@ -580,7 +581,7 @@ void ONPL::run() {
             /// Mask to find u != v
             const __mmask16 self_loop_mask = _mm512_cmpneq_epi32_mask(check_self_loop, v_vec);
             /// Gather community of the neighbor vertices.
-            __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &zeta[0], 4);
+            __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &_data[0], 4);
             /// Gather affinity of the corresponding community.
             __m512 affinity_vec = _mm512_mask_i32gather_ps(fl_set0, self_loop_mask, C_vec, &pnt_affinity[0], 4);
 
@@ -634,7 +635,7 @@ void ONPL::run() {
                         for (int kl = 0; kl < 16; ++kl) {
                             std::cout<< kl << " : " << tmp_remaining_comm[kl] << ", " << tmp_vec[kl]
                                       << " vec: " << pnt_outEdges[i+kl]
-                                      << " comm: " << zeta[pnt_outEdges[i+kl]] << std::endl;
+                                      << " comm: " << _data[pnt_outEdges[i+kl]] << std::endl;
                         }
                     }
                     pnt_affinity[remaining_comm[j]] += f_defaultEdgeWeight;
@@ -649,7 +650,7 @@ void ONPL::run() {
             }
             node v = pnt_outEdges[j];
             if (u != v) {
-                index C = zeta[v];
+                index C = _data[v];
                 if (pnt_affinity[C] == -1) {
                     /// found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                     pnt_affinity[C] = 0;
@@ -666,7 +667,7 @@ void ONPL::run() {
         index best = none;
         f_weight deltaBest = -1;
 
-        index C = zeta[u];
+        index C = _data[u];
         f_weight affinityC = pnt_affinity[C];
         f_weight volN = volNode[u];
         f_weight volCommunityMinusNode_C = volCommunity[C] - volN;
@@ -719,7 +720,7 @@ void ONPL::run() {
             assert (best != C && best != none);// do not "move" to original cluster
                                                //#pragma omp atomic update
                                                //                move_count += 1;
-            zeta[u] = best; // move to best cluster
+            _data[u] = best; // move to best cluster
             // TRACE("node " , u , " moved");
 
             // mod update
@@ -751,9 +752,9 @@ void ONPL::run() {
         /// Initialize affinity with zero. May be we can use intel intrinsic to do that.
 #pragma omp simd
         for(index edge=0; edge<_deg; ++edge){
-            pnt_affinity[zeta[pnt_outEdges[edge]]] = -1.0;
+            pnt_affinity[_data[pnt_outEdges[edge]]] = -1.0;
         }
-        pnt_affinity[zeta[u]] = 0;
+        pnt_affinity[_data[u]] = 0;
         index i=0;
 
         /// protect u != v condition
@@ -765,7 +766,7 @@ void ONPL::run() {
             /// Mask to find u != v
             __mmask16 self_loop_mask = _mm512_cmpneq_epi32_mask(check_self_loop, v_vec);
             /// Gather community of the neighbor vertices.
-            __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &zeta[0], 4);
+            __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &_data[0], 4);
             sint vertex_cnt = _mm_popcnt_u32((unsigned)self_loop_mask);
 
             /// It will find out the community that is not processed.
@@ -801,7 +802,7 @@ void ONPL::run() {
         for (index j= i; j < _deg; ++j) {
             node v = pnt_outEdges[j];
             if (u != v) {
-                index C = zeta[v];
+                index C = _data[v];
                 if (pnt_affinity[C] == -1) {
                     /// found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                     pnt_affinity[C] = 0;
@@ -814,7 +815,7 @@ void ONPL::run() {
         index best = none;
         f_weight deltaBest = -1;
 
-        index C = zeta[u];
+        index C = _data[u];
         f_weight affinityC = pnt_affinity[C];
         f_weight volN = volNode[u];
         f_weight volCommunityMinusNode_C = volCommunity[C] - volN;
@@ -834,7 +835,7 @@ void ONPL::run() {
         if (deltaBest > 0) { // if modularity improvement possible
             assert (best != C && best != none);// do not "move" to original cluster
 
-            zeta[u] = best; // move to best cluster
+            _data[u] = best; // move to best cluster
             // TRACE("node " , u , " moved");
 
             // mod update
@@ -874,14 +875,14 @@ void ONPL::run() {
         /// Initialize affinity with zero. May be we can use intel intrinsic to do that.
 #pragma omp simd
         for(index edge=0; edge<_deg; ++edge){
-            pnt_affinity[zeta[pnt_outEdges[edge]]] = -1.0;
+            pnt_affinity[_data[pnt_outEdges[edge]]] = -1.0;
         }
-        pnt_affinity[zeta[u]] = 0;
+        pnt_affinity[_data[u]] = 0;
 
         for (int i = 0; i < _deg; ++i) {
             node v = pnt_outEdges[i];
             if (u != v) {
-                index C = zeta[v];
+                index C = _data[v];
                 if (pnt_affinity[C] == -1) {
                     // found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                     pnt_affinity[C] = 0;
@@ -894,7 +895,7 @@ void ONPL::run() {
         index best = none;
         f_weight deltaBest = -1;
 
-        index C = zeta[u];
+        index C = _data[u];
         f_weight affinityC = pnt_affinity[C];
         f_weight volN = volNode[u];
         f_weight volCommunityMinusNode_C = volCommunity[C] - volN;
@@ -916,7 +917,7 @@ void ONPL::run() {
             assert (best != C && best != none);// do not "move" to original cluster
                                                //#pragma omp atomic update
                                                //                move_count += 1;
-            zeta[u] = best; // move to best cluster
+            _data[u] = best; // move to best cluster
             // TRACE("node " , u , " moved");
 
             // mod update
@@ -1039,6 +1040,7 @@ void ONPL::run() {
     //        printf("[%d] move-phase time (%.4f secs)\n", m_iter, (double)(c_end - c_start) / CLOCKS_PER_SEC);
     //        timing["move"].push_back(timer.elapsedMilliseconds());
     timing["move"].push_back(m_time);
+    zeta.setVector(_data);
     double new_modularity = modularity.getQuality(zeta, *G);
     handler.assureRunning();
     /*if(m_iter > 1 && (new_modularity - old_modularity)<0.000001)
