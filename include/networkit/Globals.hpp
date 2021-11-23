@@ -13,17 +13,17 @@
 #include <utility>
 
 namespace NetworKit {
-using index = uint64_t; ///< more expressive name for an index into an array
+using index = uint32_t; ///< more expressive name for an index into an array
 
 /// Should be used in OpenMP parallel for-loops and is associated with unsigned semantics.
 /// On MSVC it falls back to being signed, as MSVC does not support unsigned parallel fors.
 #ifdef _MSC_VER
-using omp_index = int64_t;
+using omp_index = uint32_t;
 #else
 using omp_index = index;
 #endif // _MSC_VER
 
-using count = uint64_t;    ///< more expressive name for an integer quantity
+using count = uint32_t;    ///< more expressive name for an integer quantity
 using node = index;        ///< node indices are 0-based
 using edgeweight = double; ///< edge weight type
 using f_weight = float; ///< edge weight type
