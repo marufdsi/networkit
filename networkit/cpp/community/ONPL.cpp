@@ -630,9 +630,11 @@ void ONPL::run() {
                                   << remaining_comm[j] << " >= " << z << ", degree" << _deg
                                   << std::endl;
                         index *tmp_remaining_comm = (index *) &tmp_C;
+                        index *tmp_vec = (index *) &v_vec;
                         for (int kl = 0; kl < 16; ++kl) {
-                            std::cout<< kl << " : " << tmp_remaining_comm[kl]
-                                      << " vec: " << pnt_outEdges[i+kl] << " comm: " << zeta[pnt_outEdges[i+kl]] << std::endl;
+                            std::cout<< kl << " : " << tmp_remaining_comm[kl] << ", " << tmp_vec[kl]
+                                      << " vec: " << pnt_outEdges[i+kl]
+                                      << " comm: " << zeta[pnt_outEdges[i+kl]] << std::endl;
                         }
                     }
                     pnt_affinity[remaining_comm[j]] += f_defaultEdgeWeight;
