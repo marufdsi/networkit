@@ -137,8 +137,8 @@ void ONPL::run() {
     __m512 default_edge_weight;
     f_weight f_defaultEdgeWeight;
     if(!isGraphWeighted){
-        default_edge_weight = _mm512_set1_ps(defaultEdgeWeight);
-        f_defaultEdgeWeight = defaultEdgeWeight;
+        default_edge_weight = _mm512_set1_ps(fdefaultEdgeWeight);
+        f_defaultEdgeWeight = fdefaultEdgeWeight;
     }
     /// Calculate affinity. 512 register, so it can load 16, 32 bit integer or floating point.
     /// 512 bit double register initialize by all 0.0
