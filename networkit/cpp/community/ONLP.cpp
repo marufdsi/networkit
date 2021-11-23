@@ -97,8 +97,8 @@ void ONLP::run() {
 
     std::vector<std::vector<f_weight>> labelWeights(omp_get_max_threads(),
                                                     std::vector<f_weight>(omega));
-    std::vector<std::vector<f_weight>> uniqueLabels(omp_get_max_threads(),
-                                                    std::vector<f_weight>(z));
+    std::vector<std::vector<index>> uniqueLabels(omp_get_max_threads(),
+                                                    std::vector<index>(z));
 
     std::cout << "maxIterations: " << maxIterations << " max threads: " << omp_get_max_threads()
               << " Threshold: " << this->updateThreshold << " max sub: " << max_sub
@@ -148,7 +148,7 @@ void ONLP::run() {
                     /// It will find out the distinct label.
                     distinct_lw = _mm512_mask_compress_epi32(set0, _mm512_kand(mask, new_labels_mask), lw_vec);
                     /// Count the set bit from the mask for neighbor labels
-                    sint neigh_lw_cnt = _mm_popcnt_u32((unsigned) _mm512_kand(mask, new_labels_mask));
+                    int neigh_lw_cnt = _mm_popcnt_u32((unsigned) _mm512_kand(mask, new_labels_mask));
                     /// Store distinct neighbor community
                     _mm512_storeu_si512(&pnt_uniqueLabels[_cnt], distinct_lw);
                     /// Increment neighbor labels count
