@@ -587,7 +587,7 @@ void ONPL::run() {
             /// Store distinct neighbor community
             //                _mm512_mask_storeu_epi32(&pnt_neigh_comm[neigh_counter], _mm512_kand(mask, new_comm_mask), distinct_comm);
             if(neigh_counter>=max_deg_of_graph){
-                std::cout<< "Problem found: " << neigh_counter << " >= " << max_deg_of_graph << endl;
+                std::cout<< "Problem found: " << neigh_counter << " >= " << max_deg_of_graph << std::endl;
             }
             _mm512_storeu_si512(&pnt_neigh_comm[neigh_counter], distinct_comm);
             /// Increment neighbor community count
@@ -623,7 +623,7 @@ void ONPL::run() {
                     /// found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                     pnt_affinity[C] = 0;
                     if(neigh_counter>=max_deg_of_graph){
-                        std::cout<< "Problem found: " << neigh_counter << " >= " << max_deg_of_graph << endl;
+                        std::cout<< "Problem found: " << neigh_counter << " >= " << max_deg_of_graph << std::endl;
                     }
                     pnt_neigh_comm[neigh_counter++] = C;
                 }
