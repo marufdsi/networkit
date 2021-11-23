@@ -625,7 +625,7 @@ void ONPL::run() {
                 index *remaining_comm = (index *) &C_vec;
                 for (int j = 0; j < vertex_cnt; ++j) {
                     if(remaining_comm[j]>=z){
-                        std::cout<< "remaining Problem found: " << remaining_comm[j] << " >= " << z << std::endl;
+                        std::cout<< vertex_cnt << " : remaining Problem found: " << remaining_comm[j] << " >= " << z << std::endl;
                     }
                     pnt_affinity[remaining_comm[j]] += f_defaultEdgeWeight;
                 }
