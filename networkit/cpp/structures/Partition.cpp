@@ -128,11 +128,11 @@ std::set<index> Partition::getMembers(index s) const {
     return subset;
 }
 
-std::vector<index> &Partition::getVector() const {
+std::vector<index> &Partition::getVector() {
     return data;
 }
 
-void Partition::setVector(std::vector<index> _data) const {
+void Partition::setVector(std::vector<index> _data) {
     this->data = _data;
 }
 
