@@ -34,11 +34,11 @@ void ParallelPartitionCoarsening::run() {
     Gcoarsened = Graph(numParts, true, false);
 
     auto aggregateEdgeWeights = [&](node su, count &numEdges, count &numSelfLoops,
-                                    std::vector<edgeweight> &incidentPartWeights,
+                                    std::vector<f_weight> &incidentPartWeights,
                                     std::vector<node> &incidentParts) {
         for (index i = partBegin[su]; i < partBegin[su + 1]; ++i) {
             node u = nodesSortedByPart[i];
-            G->forNeighborsOf(u, [&](node v, edgeweight ew) {
+            G->forNeighborsOf(u, [&](node v, f_weight ew) {
                 const node sv = nodeToSuperNode[v];
                 if (sv != su || u >= v) {
                     if (incidentPartWeights[sv] == 0.0) {
@@ -68,7 +68,7 @@ void ParallelPartitionCoarsening::run() {
     if (!parallel) {
         // The code has duplication because even the overhead of opening the parallel section was
         // too much if used on lots of very small graphs, as in Ego-Splitting for example
-        std::vector<edgeweight> incidentPartWeights(numParts, 0.0);
+        std::vector<f_weight> incidentPartWeights(numParts, 0.0);
         std::vector<node> incidentParts;
         incidentParts.reserve(numParts);
         for (node su = 0; su < numParts; ++su) {
@@ -77,7 +77,7 @@ void ParallelPartitionCoarsening::run() {
     } else {
 #pragma omp parallel
         {
-            std::vector<edgeweight> incidentPartWeights(numParts, 0.0);
+            std::vector<f_weight> incidentPartWeights(numParts, 0.0);
             std::vector<node> incidentParts;
             incidentParts.reserve(numParts);
 
