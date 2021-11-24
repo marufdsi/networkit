@@ -1,0 +1,9 @@
+Version,Graph Name,Threads,Event,Power,Iteration
+MPLP,uk-2002,36,package-0,254.269,1
+MPLP,uk-2002,36,dram,44.1738,1
+MPLP,uk-2002,36,package-1,253.033,1
+MPLP,uk-2002,36,dram,46.3388,1
+MPLP,nlpkkt200,36,package-0,2506.22,1
+MPLP,nlpkkt200,36,dram,290.51,1
+MPLP,nlpkkt200,36,package-1,2531.5,1
+MPLP,nlpkkt200,36,dram,316.383,1

@@ -1,0 +1,3 @@
+GraphName,Version,Nodes,Edges,Wall Time,CPU Time,Clusters,Modularity,MaxIterations,FirstMoveTime,MoveTime,CoarsenTime,RefineTime,Threads,CacheLevel,CacheMissCount,Refine
+uk-2002,MPLP,18520486,261787258,3.23622,47.7827,248955,0.960742,25,0,1124,0,0,36,LL,0,0
+nlpkkt200,MPLP,16240000,215992816,21.1636,693.875,2556406,0.369032,25,0,19246,0,0,36,LL,0,0
