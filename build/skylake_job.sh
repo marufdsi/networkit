@@ -26,7 +26,7 @@ arch=1
 it=25
 
 echo "Path: "$1" threads: "$2" io Method: "$3
-for v in 6 #5 1 4 3 2 #0
+for v in 1 #5 1 4 3 2 #0
 do
 	./networkit_tests $1 $2 $v $3 $it $vecType $arch
 #coloring
