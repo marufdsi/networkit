@@ -237,6 +237,7 @@ int main(int argc, char *argv[]) {
                   << "," << "MoveTime" << "," << "CoarsenTime" << "," << "RefineTime" << "," << "Threads" << "," << "CacheLevel"
                   << "," << "CacheMissCount" << "," << "Refine" << std::endl;
     }
+    infile.close();
 #endif
     count z = G.upperNodeIdBound();
     count edges = G.numberOfEdges();
