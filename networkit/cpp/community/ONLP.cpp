@@ -199,8 +199,8 @@ void ONLP::run() {
                     label heaviest = -1;
                     f_weight _heavyWeight = -1, max_weight = 0;
                     label lv = data[v];
-#pragma unroll
-                    for (e = 0; (e + 16) <= _cnt; e += 16) {
+//#pragma unroll
+                    /*for (e = 0; (e + 16) <= _cnt; e += 16) {
                         /// Load at most 16 neighbor label.
                         __m512i lw_vec = _mm512_loadu_si512((__m512i *)&pnt_uniqueLabels[e]);
                         /// Gather label weight of the corresponding label.
@@ -214,8 +214,8 @@ void ONLP::run() {
                             _heavyWeight = max_weight;
                             heaviest = _mm512_mask_reduce_max_epi32(gain_mask, lw_vec);
                         }
-                    }
-                    for (int i = e; i < _cnt; ++i) {
+                    }*/
+                    for (int i = 0; i < _cnt; ++i) {
                         label lw = pnt_uniqueLabels[i];
                         if ((pnt_labelWeights[lw] > _heavyWeight)
                             || ((pnt_labelWeights[lw] == _heavyWeight) && (heaviest > lw))) {
