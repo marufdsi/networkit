@@ -235,3 +235,7 @@ MPLP,delaunay_n24,48,package-0,274.295,1
 MPLP,delaunay_n24,48,dram,44.2235,1
 MPLP,delaunay_n24,48,package-1,294.383,1
 MPLP,delaunay_n24,48,dram,53.5406,1
+ONLP,delaunay_n24,48,package-0,421.59,1
+ONLP,delaunay_n24,48,dram,58.757,1
+ONLP,delaunay_n24,48,package-1,422.591,1
+ONLP,delaunay_n24,48,dram,69.6904,1
