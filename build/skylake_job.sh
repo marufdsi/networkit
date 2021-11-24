@@ -9,7 +9,7 @@
 #SBATCH --ntasks-per-node=1       # maximum task per node	
 #SBATCH --cpus-per-task=36	# Number of CPU cores per task
 #SBATCH --constraint=skylake    # for Skylake Processor
-#SBATCH --mem=150gb                  # Total memory limit
+#SBATCH --mem=300gb                  # Total memory limit
 #SBATCH --time=30:00:00              # Time limit hrs:min:sec
 #SBATCH --output=skylake_%j.log     # Standard output and error log
 
@@ -26,7 +26,7 @@ arch=1
 it=25
 
 echo "Path: "$1" threads: "$2" io Method: "$3
-for v in 1 2 3 4 5 6 #0
+for v in 0 #1 2 3 4 5 6 #0
 do
 	./networkit_tests $1 $2 $v $3 $it $vecType $arch
 #coloring
