@@ -115,7 +115,7 @@ void ONLP::run() {
         //        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
-        if(nIterations <= 1) {
+        if(nIterations <= 2) {
 #pragma omp parallel for schedule(guided)
             for (omp_index v = 0; v < static_cast<omp_index>(z); ++v) {
                 if (G->hasNode(v) && (activeNodes[v] == 1) && (G->degree(v) > 0)) {
@@ -250,7 +250,7 @@ void ONLP::run() {
             for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
                 if (G->hasNode(v) && (activeNodes[v]) && (G->degree(v) > 0)) {
                     index tid = omp_get_thread_num();
-#pragma omp simd
+//#pragma omp simd
                     for (int i = 0; i < outEdges[v].size(); ++i) {
                         node w = outEdges[v][i];
                         label lw = data[w];
@@ -281,7 +281,7 @@ void ONLP::run() {
                     if (heaviest != -1 && lv != heaviest) { // UPDATE
                         data[v] = heaviest; //result[v] = heaviest;
                         nUpdated += 1; // TODO: atomic update?
-#pragma omp simd
+//#pragma omp simd
                         for (int i = 0; i < outEdges[v].size(); ++i) {
                             node u = outEdges[v][i];
                             activeNodes[u] = 1;
