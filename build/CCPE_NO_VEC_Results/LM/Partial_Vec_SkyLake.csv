@@ -1,1 +1,2 @@
 GraphName,Version,Nodes,Edges,Wall Time,CPU Time,Clusters,Modularity,MaxIterations,FirstMoveTime,MoveTime,CoarsenTime,RefineTime,Threads,CacheLevel,CacheMissCount,Refine
+uk-2002,PLM,18520486,261787258,92.6625,1342.72,42040,0.989739,25,84690.7,88465.7,740.727,0,36,L1D,0,0
