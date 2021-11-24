@@ -98,11 +98,11 @@
 #endif
 
 #ifndef NUM_RUN
-#define NUM_RUN 3
+#define NUM_RUN 1
 #endif
 
 #ifndef SKIP_RUN
-#define SKIP_RUN 2
+#define SKIP_RUN 0
 #endif
 
 using namespace NetworKit;
