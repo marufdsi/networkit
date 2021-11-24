@@ -1,0 +1,17 @@
+Version,Graph Name,Threads,Event,Power,Iteration
+PLM,uk-2002,36,package-0,7711.66,1
+PLM,uk-2002,36,dram,1222.47,1
+PLM,uk-2002,36,package-1,7921.64,1
+PLM,uk-2002,36,dram,1363.39,1
+PLM,europe,36,package-0,40002.7,1
+PLM,europe,36,dram,4695.2,1
+PLM,europe,36,package-1,-225248,1
+PLM,europe,36,dram,5501.63,1
+MPLM,uk-2002,36,package-0,2375.16,1
+MPLM,uk-2002,36,dram,241.364,1
+MPLM,uk-2002,36,package-1,2373.22,1
+MPLM,uk-2002,36,dram,314.261,1
+PLM,nlpkkt200,36,package-0,15199.6,1
+PLM,nlpkkt200,36,dram,1731.25,1
+PLM,nlpkkt200,36,package-1,15889.2,1
+PLM,nlpkkt200,36,dram,2510.96,1
