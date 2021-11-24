@@ -795,11 +795,11 @@ static void rapl_sysfs_after() {
 
 }
 
-static void rapl_sysfs_results(std::string version, std::string graph_name, int threads, int iter, int arch=1) {
+static void rapl_sysfs_results(std::string version, std::string graph_name, int threads, int iter, int arch=1, std::string prefix="") {
     int i, j;
     std::ofstream power_log;
 
-    std::string folderName = "CCPE_Results/LP/PowerLog/";
+    std::string folderName = prefix + "PowerLog/";
     mkdir(folderName.c_str(), 0777);
 //    if (mkdir(folderName.c_str(), 0777) == -1)
 //        std::cout<<"Directory " << folderName << " is already exist" << std::endl;

@@ -219,8 +219,8 @@ int main(int argc, char *argv[]) {
 
 #if OVERALL_LOG
     std::ofstream graph_log;
-
-    std::string folderName = "CCPE_Results/LP/";
+    std::string conference = "CCPE_Results/";
+    std::string folderName = conference + (version >=4 ? "LP/" : "");
     if (mkdir(folderName.c_str(), 0777) == -1)
         std::cout<<"Directory " << folderName << " is already exist" << std::endl;
     else
@@ -263,7 +263,7 @@ int main(int argc, char *argv[]) {
 #if POWER_LOG
                 rapl_sysfs_after();
                 // Results
-                rapl_sysfs_results("PLM", _graphName, std::stoi(ppn), 1, architecture);
+                rapl_sysfs_results("PLM", _graphName, std::stoi(ppn), 1, architecture, folderName);
 #endif
                 //                clock_gettime(CLOCK_MONOTONIC, &end);
                 clock_gettime(CLOCK_REALTIME, &end);
@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) {
                 std::cout<<"prepare results of energy" << std::endl;
                 rapl_sysfs_after();
                 // Results
-                rapl_sysfs_results("ONPL", _graphName, std::stoi(ppn), 1, architecture);
+                rapl_sysfs_results("ONPL", _graphName, std::stoi(ppn), 1, architecture, folderName);
                 std::cout<<"Done" << std::endl;
 #endif
 
@@ -421,7 +421,7 @@ int main(int argc, char *argv[]) {
 #if POWER_LOG
                 rapl_sysfs_after();
                 // Results
-                rapl_sysfs_results("OVPL", _graphName, std::stoi(ppn), 1, architecture);
+                rapl_sysfs_results("OVPL", _graphName, std::stoi(ppn), 1, architecture, folderName);
 #endif
                 //                clock_gettime(CLOCK_MONOTONIC, &end);
                 clock_gettime(CLOCK_REALTIME, &end);
@@ -513,7 +513,7 @@ int main(int argc, char *argv[]) {
 #if POWER_LOG
                 rapl_sysfs_after();
                 // Results
-                rapl_sysfs_results("MPLM", _graphName, std::stoi(ppn), 1, architecture);
+                rapl_sysfs_results("MPLM", _graphName, std::stoi(ppn), 1, architecture, folderName);
 #endif
 
                 Partition s_zeta = modifiedPLM.getPartition();
@@ -590,7 +590,7 @@ int main(int argc, char *argv[]) {
 #if POWER_LOG
                 rapl_sysfs_after();
                 // Results
-                rapl_sysfs_results("PLP", _graphName, std::stoi(ppn), 1, architecture);
+                rapl_sysfs_results("PLP", _graphName, std::stoi(ppn), 1, architecture, folderName);
 #endif
 
                 Partition s_zeta = lp.getPartition();
@@ -648,7 +648,7 @@ int main(int argc, char *argv[]) {
 #if POWER_LOG
                 rapl_sysfs_after();
                 // Results
-                rapl_sysfs_results("MPLP", _graphName, std::stoi(ppn), 1, architecture);
+                rapl_sysfs_results("MPLP", _graphName, std::stoi(ppn), 1, architecture, folderName);
 #endif
 
                 Partition s_zeta = mplp.getPartition();
@@ -706,7 +706,7 @@ int main(int argc, char *argv[]) {
 #if POWER_LOG
                 rapl_sysfs_after();
                 // Results
-                rapl_sysfs_results("ONLP", _graphName, std::stoi(ppn), 1, architecture);
+                rapl_sysfs_results("ONLP", _graphName, std::stoi(ppn), 1, architecture, folderName);
 #endif
 
                 Partition s_zeta = onlp.getPartition();
