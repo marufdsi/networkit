@@ -124,13 +124,14 @@ void ONLP::run() {
                 index _deg = outEdges[v].size();
                 const node *pnt_outEdges = &outEdges[v][0];
                 index e = 0;
-#pragma unroll
-                for (e = 0; (e+16) <= _deg; e += 16) {
+//#pragma unroll
+                /*for (e = 0; (e+16) <= _deg; e += 16) {
                     __m512i w_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
                     __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
                     _mm512_i32scatter_ps(&pnt_labelWeights[0], lw_vec, fl_set1, 4);
-                }
-                for (index edge= e; edge < _deg; ++edge) {
+                }*/
+#pragma omp simd
+                for (index edge= 0; edge < _deg; ++edge) {
                     pnt_labelWeights[data[pnt_outEdges[edge]]] = -1.0;
                 }
                 index _cnt = 0;
@@ -215,13 +216,14 @@ void ONLP::run() {
                 if (heaviest != -1 && lv != heaviest) { // UPDATE
                     data[v] = heaviest;                 // result[v] = heaviest;
                     nUpdated += 1;                      // TODO: atomic update?
-#pragma unroll
-                    for (e=0; (e+16) <= _deg; e+= 16) {
+//#pragma unroll
+                   /* for (e=0; (e+16) <= _deg; e+= 16) {
                         __m512i u_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
                         /// Scatter label weight value to the label weight pointer.
                         _mm512_i32scatter_epi32(&activeNodes[0], u_vec, set_plus_1, 4);
-                    }
-                    for (int i = e; i < _deg; ++i) {
+                    }*/
+#pragma omp simd
+                    for (int i = 0; i < _deg; ++i) {
                         node u = pnt_outEdges[i];
                         activeNodes[u] = true;
                     }
