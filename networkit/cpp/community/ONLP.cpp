@@ -115,124 +115,182 @@ void ONLP::run() {
         //        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
+        if(nIterations <= 1) {
 #pragma omp parallel for schedule(guided)
-        for (omp_index v = 0; v < static_cast<omp_index>(z); ++v) {
-            if (G->hasNode(v) && (activeNodes[v] == 1) && (G->degree(v) > 0)) {
-                index tid = omp_get_thread_num();
-                f_weight *pnt_labelWeights = &labelWeights[tid][0];
-                index *pnt_uniqueLabels = &uniqueLabels[tid][0];
-                index _deg = outEdges[v].size();
-                const node *pnt_outEdges = &outEdges[v][0];
-                index e = 0;
-//#pragma unroll
-                /*for (e = 0; (e+16) <= _deg; e += 16) {
-                    __m512i w_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
-                    __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
-                    _mm512_i32scatter_ps(&pnt_labelWeights[0], lw_vec, fl_set1, 4);
-                }*/
-#pragma omp simd
-                for (index edge= 0; edge < _deg; ++edge) {
-                    pnt_labelWeights[data[pnt_outEdges[edge]]] = -1.0;
-                }
-                index _cnt = 0;
-#pragma unroll
-                for (e = 0; (e+16) <= _deg; e += 16) {
-                    __m512i w_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
-                    __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
-                    __m512 labelWeight_vec = _mm512_i32gather_ps(lw_vec, &pnt_labelWeights[0], 4);
-                    /// label weight = -1 that means labels that come first time
-                    const __mmask16 new_labels_mask = _mm512_cmpeq_ps_mask(fl_set1, labelWeight_vec);
-                    /// Detect conflict of the labels
-                    __m512i lw_conflict = _mm512_conflict_epi32(lw_vec);
-                    /// Calculate mask using compare to bits with zero on lw_conflict
-                    const __mmask16 mask = _mm512_cmpeq_epi32_mask(lw_conflict, set0);
-                    /// Now we need to collect the distinct neighbor label and vertices that didn't process yet.
-                    __m512i distinct_lw;
-                    /// It will find out the distinct label.
-                    distinct_lw = _mm512_mask_compress_epi32(set0, _mm512_kand(mask, new_labels_mask), lw_vec);
-                    /// Count the set bit from the mask for neighbor labels
-                    int neigh_lw_cnt = _mm_popcnt_u32((unsigned) _mm512_kand(mask, new_labels_mask));
-                    /// Store distinct neighbor community
-                    _mm512_storeu_si512(&pnt_uniqueLabels[_cnt], distinct_lw);
-                    /// Increment neighbor labels count
-                    _cnt += neigh_lw_cnt;
-
-                    /// Assign 0.0 in the label weight that contains -1.0 right now.
-                    labelWeight_vec = _mm512_mask_mov_ps(labelWeight_vec, new_labels_mask, fl_set0);
-                    /// Add edge weight to the label weight and if mask doesn't set load from affinity
-                    labelWeight_vec = _mm512_mask_add_ps(labelWeight_vec, mask, labelWeight_vec, default_edge_weight);
-                    /// Scatter label weight value to the label weight pointer.
-                    _mm512_mask_i32scatter_ps(&pnt_labelWeights[0], mask, lw_vec, labelWeight_vec, 4);
-
-                    /// Count the set bit from the mask for ignore vertices
-                    __mmask16 conflict_lw_mask = _mm512_knot(mask);
-                    int vertex_cnt = _mm_popcnt_u32((unsigned)conflict_lw_mask);
-
-                    if(vertex_cnt>0) {
-                        lw_vec = _mm512_mask_compress_epi32(set0, conflict_lw_mask, lw_vec);
-                        index *remaining_lw = (index *) &lw_vec;
-                        for (int j = 0; j < vertex_cnt; ++j) {
-                            pnt_labelWeights[remaining_lw[j]] += fdefaultEdgeWeight;
-                        }
-                    }
-                }
-                pnt_outEdges = &outEdges[v][0];
-                for (int i = e; i < _deg; ++i) {
-                    node w = pnt_outEdges[i];
-                    label lw = data[w];
-                    if (pnt_labelWeights[lw] == -1) {
-                        pnt_labelWeights[lw] = 0;
-                        pnt_uniqueLabels[_cnt++] = lw;
-                    }
-                    pnt_labelWeights[lw] += fdefaultEdgeWeight;
-                }
-
-                // get heaviest label
-                label heaviest = -1;
-                f_weight _heavyWeight = -1, max_weight = 0;
-                label lv = data[v];
-#pragma unroll
-                for (e=0; (e+16) <= _cnt; e+= 16) {
-                    /// Load at most 16 neighbor label.
-                    __m512i lw_vec = _mm512_loadu_si512((__m512i *) &pnt_uniqueLabels[e]);
-                    /// Gather label weight of the corresponding label.
-                    __m512 labelWeight_vec = _mm512_i32gather_ps(lw_vec, &pnt_labelWeights[0], 4);
-                    max_weight = _mm512_reduce_max_ps(labelWeight_vec);
-                    if (max_weight >= _heavyWeight) {
-                        __m512 max_weight_vec = _mm512_set1_ps(max_weight);
-                        __mmask16 gain_mask = _mm512_cmpeq_ps_mask(labelWeight_vec, max_weight_vec);
-                        _heavyWeight = max_weight;
-                        heaviest = _mm512_mask_reduce_max_epi32(gain_mask, lw_vec);
-                    }
-                }
-                for (int i = e; i < _cnt; ++i) {
-                    label lw = pnt_uniqueLabels[i];
-                    if ((pnt_labelWeights[lw] > _heavyWeight)
-                        || ((pnt_labelWeights[lw] == _heavyWeight) && (heaviest > lw))) {
-                        heaviest = lw;
-                        _heavyWeight = pnt_labelWeights[lw];
-                    }
-                }
-                if (heaviest != -1 && lv != heaviest) { // UPDATE
-                    data[v] = heaviest;                 // result[v] = heaviest;
-                    nUpdated += 1;                      // TODO: atomic update?
-//#pragma unroll
-                   /* for (e=0; (e+16) <= _deg; e+= 16) {
-                        __m512i u_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
-                        /// Scatter label weight value to the label weight pointer.
-                        _mm512_i32scatter_epi32(&activeNodes[0], u_vec, set_plus_1, 4);
+            for (omp_index v = 0; v < static_cast<omp_index>(z); ++v) {
+                if (G->hasNode(v) && (activeNodes[v] == 1) && (G->degree(v) > 0)) {
+                    index tid = omp_get_thread_num();
+                    f_weight *pnt_labelWeights = &labelWeights[tid][0];
+                    index *pnt_uniqueLabels = &uniqueLabels[tid][0];
+                    index _deg = outEdges[v].size();
+                    const node *pnt_outEdges = &outEdges[v][0];
+                    index e = 0;
+                    //#pragma unroll
+                    /*for (e = 0; (e+16) <= _deg; e += 16) {
+                        __m512i w_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
+                        __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
+                        _mm512_i32scatter_ps(&pnt_labelWeights[0], lw_vec, fl_set1, 4);
                     }*/
 #pragma omp simd
-                    for (int i = 0; i < _deg; ++i) {
-                        node u = pnt_outEdges[i];
-                        activeNodes[u] = true;
+                    for (index edge = 0; edge < _deg; ++edge) {
+                        pnt_labelWeights[data[pnt_outEdges[edge]]] = -1.0;
                     }
-                } else {
-                    activeNodes[v] = false;
-                }
+                    index _cnt = 0;
+#pragma unroll
+                    for (e = 0; (e + 16) <= _deg; e += 16) {
+                        __m512i w_vec = _mm512_loadu_si512((__m512i *)&pnt_outEdges[e]);
+                        __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
+                        __m512 labelWeight_vec =
+                            _mm512_i32gather_ps(lw_vec, &pnt_labelWeights[0], 4);
+                        /// label weight = -1 that means labels that come first time
+                        const __mmask16 new_labels_mask =
+                            _mm512_cmpeq_ps_mask(fl_set1, labelWeight_vec);
+                        /// Detect conflict of the labels
+                        __m512i lw_conflict = _mm512_conflict_epi32(lw_vec);
+                        /// Calculate mask using compare to bits with zero on lw_conflict
+                        const __mmask16 mask = _mm512_cmpeq_epi32_mask(lw_conflict, set0);
+                        /// Now we need to collect the distinct neighbor label and vertices that didn't process yet.
+                        __m512i distinct_lw;
+                        /// It will find out the distinct label.
+                        distinct_lw = _mm512_mask_compress_epi32(
+                            set0, _mm512_kand(mask, new_labels_mask), lw_vec);
+                        /// Count the set bit from the mask for neighbor labels
+                        int neigh_lw_cnt =
+                            _mm_popcnt_u32((unsigned)_mm512_kand(mask, new_labels_mask));
+                        /// Store distinct neighbor community
+                        _mm512_storeu_si512(&pnt_uniqueLabels[_cnt], distinct_lw);
+                        /// Increment neighbor labels count
+                        _cnt += neigh_lw_cnt;
 
-            } else {
-                // node is isolated
+                        /// Assign 0.0 in the label weight that contains -1.0 right now.
+                        labelWeight_vec =
+                            _mm512_mask_mov_ps(labelWeight_vec, new_labels_mask, fl_set0);
+                        /// Add edge weight to the label weight and if mask doesn't set load from affinity
+                        labelWeight_vec = _mm512_mask_add_ps(labelWeight_vec, mask, labelWeight_vec,
+                                                             default_edge_weight);
+                        /// Scatter label weight value to the label weight pointer.
+                        _mm512_mask_i32scatter_ps(&pnt_labelWeights[0], mask, lw_vec,
+                                                  labelWeight_vec, 4);
+
+                        /// Count the set bit from the mask for ignore vertices
+                        __mmask16 conflict_lw_mask = _mm512_knot(mask);
+                        int vertex_cnt = _mm_popcnt_u32((unsigned)conflict_lw_mask);
+
+                        if (vertex_cnt > 0) {
+                            lw_vec = _mm512_mask_compress_epi32(set0, conflict_lw_mask, lw_vec);
+                            index *remaining_lw = (index *)&lw_vec;
+                            for (int j = 0; j < vertex_cnt; ++j) {
+                                pnt_labelWeights[remaining_lw[j]] += fdefaultEdgeWeight;
+                            }
+                        }
+                    }
+                    pnt_outEdges = &outEdges[v][0];
+                    for (int i = e; i < _deg; ++i) {
+                        node w = pnt_outEdges[i];
+                        label lw = data[w];
+                        if (pnt_labelWeights[lw] == -1) {
+                            pnt_labelWeights[lw] = 0;
+                            pnt_uniqueLabels[_cnt++] = lw;
+                        }
+                        pnt_labelWeights[lw] += fdefaultEdgeWeight;
+                    }
+
+                    // get heaviest label
+                    label heaviest = -1;
+                    f_weight _heavyWeight = -1, max_weight = 0;
+                    label lv = data[v];
+#pragma unroll
+                    for (e = 0; (e + 16) <= _cnt; e += 16) {
+                        /// Load at most 16 neighbor label.
+                        __m512i lw_vec = _mm512_loadu_si512((__m512i *)&pnt_uniqueLabels[e]);
+                        /// Gather label weight of the corresponding label.
+                        __m512 labelWeight_vec =
+                            _mm512_i32gather_ps(lw_vec, &pnt_labelWeights[0], 4);
+                        max_weight = _mm512_reduce_max_ps(labelWeight_vec);
+                        if (max_weight >= _heavyWeight) {
+                            __m512 max_weight_vec = _mm512_set1_ps(max_weight);
+                            __mmask16 gain_mask =
+                                _mm512_cmpeq_ps_mask(labelWeight_vec, max_weight_vec);
+                            _heavyWeight = max_weight;
+                            heaviest = _mm512_mask_reduce_max_epi32(gain_mask, lw_vec);
+                        }
+                    }
+                    for (int i = e; i < _cnt; ++i) {
+                        label lw = pnt_uniqueLabels[i];
+                        if ((pnt_labelWeights[lw] > _heavyWeight)
+                            || ((pnt_labelWeights[lw] == _heavyWeight) && (heaviest > lw))) {
+                            heaviest = lw;
+                            _heavyWeight = pnt_labelWeights[lw];
+                        }
+                    }
+                    if (heaviest != -1 && lv != heaviest) { // UPDATE
+                        data[v] = heaviest;                 // result[v] = heaviest;
+                        nUpdated += 1;                      // TODO: atomic update?
+                                                            //#pragma unroll
+                                                            /* for (e=0; (e+16) <= _deg; e+= 16) {
+                                                                 __m512i u_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
+                                                                 /// Scatter label weight value to the label weight pointer.
+                                                                 _mm512_i32scatter_epi32(&activeNodes[0], u_vec, set_plus_1, 4);
+                                                             }*/
+#pragma omp simd
+                        for (int i = 0; i < _deg; ++i) {
+                            node u = pnt_outEdges[i];
+                            activeNodes[u] = true;
+                        }
+                    } else {
+                        activeNodes[v] = false;
+                    }
+
+                } else {
+                    // node is isolated
+                }
+            }
+        } else {
+#pragma omp parallel for schedule(guided)
+            for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
+                if (G->hasNode(v) && (activeNodes[v]) && (G->degree(v) > 0)) {
+                    index tid = omp_get_thread_num();
+                    for (int i = 0; i < outEdges[v].size(); ++i) {
+                        node w = outEdges[v][i];
+                        label lw = data[w];
+                        labelWeights[tid][lw] = -1;
+                    }
+                    index _cnt = 0;
+                    for (int i = 0; i < outEdges[v].size(); ++i) {
+                        node w = outEdges[v][i];
+                        label lw = data[w];
+                        if (labelWeights[tid][lw] == -1) {
+                            labelWeights[tid][lw] = 0;
+                            uniqueLabels[tid][_cnt++] = lw;
+                        }
+                        labelWeights[tid][lw] += isGraphWeighted ? outEdgeWeights[v][i] : fdefaultEdgeWeight;
+                    }
+
+                    // get heaviest label
+                    label heaviest = -1;
+                    f_weight _heavyWeight = -1;
+                    label lv = data[v];
+                    for (int i = 0; i < _cnt; ++i) {
+                        label lw = uniqueLabels[tid][i];
+                        if ((labelWeights[tid][lw] > _heavyWeight) || ((labelWeights[tid][lw] == _heavyWeight) && (heaviest > lw))) {
+                            heaviest = lw;
+                            _heavyWeight = labelWeights[tid][lw];
+                        }
+                    }
+                    if (heaviest != -1 && lv != heaviest) { // UPDATE
+                        data[v] = heaviest; //result[v] = heaviest;
+                        nUpdated += 1; // TODO: atomic update?
+                        for (int i = 0; i < outEdges[v].size(); ++i) {
+                            node u = outEdges[v][i];
+                            activeNodes[u] = true;
+                        }
+                    } else {
+                        activeNodes[v] = false;
+                    }
+
+                } else {
+                    // node is isolated
+                }
             }
         }
 
