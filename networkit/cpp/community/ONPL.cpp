@@ -563,7 +563,7 @@ void ONPL::run() {
         pnt_affinity[_data[u]] = 0;
         /// protect u != v condition
         const   __m512i check_self_loop = _mm512_set1_epi32(u);
-//#pragma unroll
+#pragma unroll
         for (i = 0; (i+16) <= _deg; i += 16) {
             //                __mmask16 mask_neighbor_exist = pow(2, ((neighbor_processed-i) >= 16 ? 16 : (neighbor_processed - i))) - 1;
             /// Load at most 16 neighbor vertices.

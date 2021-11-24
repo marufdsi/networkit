@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
 #if OVERALL_LOG
     std::ofstream graph_log;
 
-    std::string folderName = "CCPE_Results/";
+    std::string folderName = "CCPE_Results/LP";
     if (mkdir(folderName.c_str(), 0777) == -1)
         std::cout<<"Directory " << folderName << " is already exist" << std::endl;
     else

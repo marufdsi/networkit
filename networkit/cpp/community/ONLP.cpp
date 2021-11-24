@@ -124,6 +124,7 @@ void ONLP::run() {
                 index _deg = outEdges[v].size();
                 const node *pnt_outEdges = &outEdges[v][0];
                 index e = 0;
+#pragma unroll
                 for (e = 0; (e+16) <= _deg; e += 16) {
                     __m512i w_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
                     __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
@@ -133,6 +134,7 @@ void ONLP::run() {
                     pnt_labelWeights[data[pnt_outEdges[edge]]] = -1.0;
                 }
                 index _cnt = 0;
+#pragma unroll
                 for (e = 0; (e+16) <= _deg; e += 16) {
                     __m512i w_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
                     __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
@@ -188,6 +190,7 @@ void ONLP::run() {
                 label heaviest = -1;
                 f_weight _heavyWeight = -1, max_weight = 0;
                 label lv = data[v];
+#pragma unroll
                 for (e=0; (e+16) <= _cnt; e+= 16) {
                     /// Load at most 16 neighbor label.
                     __m512i lw_vec = _mm512_loadu_si512((__m512i *) &pnt_uniqueLabels[e]);
@@ -212,6 +215,7 @@ void ONLP::run() {
                 if (heaviest != -1 && lv != heaviest) { // UPDATE
                     data[v] = heaviest;                 // result[v] = heaviest;
                     nUpdated += 1;                      // TODO: atomic update?
+#pragma unroll
                     for (e=0; (e+16) <= _deg; e+= 16) {
                         __m512i u_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[e]);
                         /// Scatter label weight value to the label weight pointer.
