@@ -235,10 +235,10 @@ void ONLP::run() {
 #pragma omp simd
                         for (int i = 0; i < _deg; ++i) {
                             node u = pnt_outEdges[i];
-                            activeNodes[u] = true;
+                            activeNodes[u] = 1;
                         }
                     } else {
-                        activeNodes[v] = false;
+                        activeNodes[v] = 0;
                     }
 
                 } else {
@@ -250,6 +250,7 @@ void ONLP::run() {
             for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
                 if (G->hasNode(v) && (activeNodes[v]) && (G->degree(v) > 0)) {
                     index tid = omp_get_thread_num();
+#pragma omp simd
                     for (int i = 0; i < outEdges[v].size(); ++i) {
                         node w = outEdges[v][i];
                         label lw = data[w];
@@ -280,12 +281,13 @@ void ONLP::run() {
                     if (heaviest != -1 && lv != heaviest) { // UPDATE
                         data[v] = heaviest; //result[v] = heaviest;
                         nUpdated += 1; // TODO: atomic update?
+#pragma omp simd
                         for (int i = 0; i < outEdges[v].size(); ++i) {
                             node u = outEdges[v][i];
-                            activeNodes[u] = true;
+                            activeNodes[u] = 1;
                         }
                     } else {
-                        activeNodes[v] = false;
+                        activeNodes[v] = 0;
                     }
 
                 } else {
