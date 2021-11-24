@@ -227,3 +227,11 @@ ONLP,nlpkkt200,48,package-0,4904.86,1
 ONLP,nlpkkt200,48,dram,543.191,1
 ONLP,nlpkkt200,48,package-1,4668.66,1
 ONLP,nlpkkt200,48,dram,577.06,1
+PLP,delaunay_n24,48,package-0,1404.35,1
+PLP,delaunay_n24,48,dram,149.905,1
+PLP,delaunay_n24,48,package-1,1298.2,1
+PLP,delaunay_n24,48,dram,129.299,1
+MPLP,delaunay_n24,48,package-0,274.295,1
+MPLP,delaunay_n24,48,dram,44.2235,1
+MPLP,delaunay_n24,48,package-1,294.383,1
+MPLP,delaunay_n24,48,dram,53.5406,1
