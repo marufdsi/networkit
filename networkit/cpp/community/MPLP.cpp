@@ -105,14 +105,12 @@ void MPLP::run() {
         for (omp_index v = 0; v < static_cast<omp_index>(z); ++v){
             if (G->hasNode(v) && (activeNodes[v]) && (G->degree(v) > 0)) {
                 index tid = omp_get_thread_num();
-#pragma nosimd
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
                     label lw = data[w];
                     labelWeights[tid][lw] = -1;
                 }
                 index _cnt = 0;
-#pragma nosimd
                 for (int i = 0; i < outEdges[v].size(); ++i) {
                     node w = outEdges[v][i];
                     label lw = data[w];
@@ -127,7 +125,6 @@ void MPLP::run() {
                 label heaviest = -1;
                 f_weight _heavyWeight = -1;
                 label lv = data[v];
-#pragma nosimd
                 for (int i = 0; i < _cnt; ++i) {
                     label lw = uniqueLabels[tid][i];
                     if ((labelWeights[tid][lw] > _heavyWeight) || ((labelWeights[tid][lw] == _heavyWeight) && (heaviest > lw))) {
@@ -138,7 +135,6 @@ void MPLP::run() {
                 if (heaviest != -1 && lv != heaviest) { // UPDATE
                     data[v] = heaviest; //result[v] = heaviest;
                     nUpdated += 1; // TODO: atomic update?
-#pragma nosimd
                     for (int i = 0; i < outEdges[v].size(); ++i) {
                         node u = outEdges[v][i];
                         activeNodes[u] = true;
