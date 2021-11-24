@@ -143,3 +143,11 @@ MPLP,roadNet-PA,36,package-0,19.2869,1
 MPLP,roadNet-PA,36,dram,2.82432,1
 MPLP,roadNet-PA,36,package-1,24.883,1
 MPLP,roadNet-PA,36,dram,2.53209,1
+PLP,nlpkkt200,36,package-0,5928.43,1
+PLP,nlpkkt200,36,dram,640.49,1
+PLP,nlpkkt200,36,package-1,5776.36,1
+PLP,nlpkkt200,36,dram,613.168,1
+PLP,uk-2002,36,package-0,714.783,1
+PLP,uk-2002,36,dram,73.5885,1
+PLP,uk-2002,36,package-1,623.619,1
+PLP,uk-2002,36,dram,55.4858,1
