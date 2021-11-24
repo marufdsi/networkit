@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
 
 #if OVERALL_LOG
     std::ofstream graph_log;
-    std::string conference = "CCPE_Results/";
+    std::string conference = "CCPE_NO_VEC_Results/";
     std::string folderName = conference + (version >=4 ? "LP1/" : "LM/");
     if (mkdir(folderName.c_str(), 0777) == -1)
         std::cout<<"Directory " << folderName << " is already exist" << std::endl;
