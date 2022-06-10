@@ -105,6 +105,12 @@ void NetworKit::StablePartitionNodes::run() {
                     _mm512_i32scatter_ps(&pnt_myNeighborLabel[0], C_vec, fl_set1, 4);
                 }*/
                 for (index edge = i; edge < _deg; ++edge) {
+                    if(pnt_outEdges[edge] >= Com.upperBound()){
+                        std::cout<<"Problem with neighbor : " << pnt_outEdges[edge] << " exit the upper limit: " << Com.upperBound() << std::endl;
+                    }
+                    if(Com[pnt_outEdges[edge]] >= Com.upperBound()){
+                        std::cout<<"Problem with neighbor comm: " << Com[pnt_outEdges[edge]] << " exit the upper limit: " << Com.upperBound() << std::endl;
+                    }
                     pnt_myNeighborLabel[Com[pnt_outEdges[edge]]] = -1.0;
                 }
 //                pnt_myNeighborLabel[Com[u]] = 0;
@@ -171,6 +177,9 @@ void NetworKit::StablePartitionNodes::run() {
                         if (pnt_myNeighborLabel[c] == -1) {
                             /// found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                             pnt_myNeighborLabel[c] = 0;
+                            if(neigh_counter >= Com.upperBound()){
+                                std::cout<<"Problem with counter : " << neigh_counter << " exit the upper limit: " << Com.upperBound() << std::endl;
+                            }
                             pnt_neigh_comm[neigh_counter++] = c;
                         }
                         pnt_myNeighborLabel[c] += pnt_outEdgeWeight[j];
