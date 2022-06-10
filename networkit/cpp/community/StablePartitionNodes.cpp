@@ -38,7 +38,6 @@ void NetworKit::StablePartitionNodes::run() {
     /// 512 bit integer register initialize by all -1
     const __m512i set_minus_1 = _mm512_set1_epi32(-1);
 
-    std::cout<<"start edge weight calculation" << std::endl;
     if(!isVectorized()) {
         // first determine which nodes are stable
         G->balancedParallelForNodes([&](node u) {
@@ -85,6 +84,7 @@ void NetworKit::StablePartitionNodes::run() {
         const std::vector<f_weight> *outEdgeWeights = G->getOutEdgeWeights();
         const std::vector<node> *outEdges = G->getOutEdges();
         index** neigh_comm = (index **) malloc(max_tid * sizeof(index *));
+        std::cout<<"Initialization done" << std::endl;
         G->balancedParallelForNodes([&](node u) {
             count _deg = G->degree(u);
             if (_deg > 0) {
@@ -179,7 +179,7 @@ void NetworKit::StablePartitionNodes::run() {
                 if(my_com_weight <= 0){
                     stableMarker[u] = false;
                 } else {
-                    const __m512i reg_C = _mm512_set1_epi32(my_c);
+                    /*const __m512i reg_C = _mm512_set1_epi32(my_c);
 
                     for (i = 0; (i + 16) <= neigh_counter; i += 16) {
                         /// Load at most 16 neighbor community.
@@ -193,7 +193,8 @@ void NetworKit::StablePartitionNodes::run() {
                             stableMarker[u] = false;
                             break;
                         }
-                    }
+                    }*/
+                    i=0;
                     for (auto j=i; j<neigh_counter; ++j) {
                         if (my_c != pnt_neigh_comm[j] && pnt_myNeighborLabel[j] >= my_com_weight) {
                             stableMarker[u] = false;
