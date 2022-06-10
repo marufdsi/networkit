@@ -79,7 +79,6 @@ void NetworKit::StablePartitionNodes::run() {
     else {
         index max_tid = omp_get_max_threads();
         std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(Com.upperBound(), 0));
-        const std::vector<f_weight> *outEdgeWeights = G->getOutEdgeWeights();
         const std::vector<node> *outEdges = G->getOutEdges();
         std::vector<std::vector<index>> neigh_comm(max_tid, std::vector<index>(Com.upperBound(), 0));
 //        size_t alignment = 64;
@@ -93,8 +92,6 @@ void NetworKit::StablePartitionNodes::run() {
                 index tid = omp_get_thread_num();
                 /// Pointer for neighbor vertices. We can access using edge index.
                 const node *pnt_outEdges = &outEdges[u][0];
-                /// Pointer for neighbor edge weight. We can access using edge index.
-                const f_weight *pnt_outEdgeWeight = &outEdgeWeights[u][0];
                 index *pnt_neigh_comm = &neigh_comm[tid][0];
                 count neigh_counter = 0;
                 f_weight* pnt_myNeighborLabel = &labelWeights[tid][0];
@@ -116,11 +113,10 @@ void NetworKit::StablePartitionNodes::run() {
 //                pnt_myNeighborLabel[Com[u]] = 0;
 
                 const   __m512i check_self_loop = _mm512_set1_epi32(u);
-/*#pragma unroll
+                __m512 w_vec = _mm512_set1_ps(fdefaultEdgeWeight);
+#pragma unroll
                 for (i = 0; (i+16) <= _deg; i += 16) {
                     __m512i v_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[i]);
-                    /// Load at most 16 neighbor vertex edge weight.
-                    __m512 w_vec = _mm512_loadu_ps((__m512 *) &pnt_outEdgeWeight[i]);
                     /// Mask to find u != v
                     const __mmask16 self_loop_mask = _mm512_cmpneq_epi32_mask(check_self_loop, v_vec);
                     /// Gather community of the neighbor vertices.
@@ -165,11 +161,9 @@ void NetworKit::StablePartitionNodes::run() {
                             pnt_myNeighborLabel[remaining_comm[j]] += weight_not_processed[j];
                         }
                     }
-                }*/
+                }
 
                 pnt_outEdges = &outEdges[u][0];
-                pnt_outEdgeWeight = &outEdgeWeights[u][0];
-                i=0;
                 for (index j= i; j < _deg; ++j) {
                     node v = pnt_outEdges[j];
                     if (u != v) {
