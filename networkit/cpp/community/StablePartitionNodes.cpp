@@ -99,11 +99,11 @@ void NetworKit::StablePartitionNodes::run() {
                 count neigh_counter = 0;
                 f_weight* pnt_myNeighborLabel = &labelWeights[tid][0];
                 index i = 0;
-                /*for (i = 0; (i+16) <= _deg; i += 16) {
+                for (i = 0; (i+16) <= _deg; i += 16) {
                     __m512i v_vec = _mm512_loadu_si512((__m512i * ) & pnt_outEdges[i]);
                     __m512i C_vec = _mm512_i32gather_epi32(v_vec, &Com[0], 4);
                     _mm512_i32scatter_ps(&pnt_myNeighborLabel[0], C_vec, fl_set1, 4);
-                }*/
+                }
                 for (index edge = i; edge < _deg; ++edge) {
                     if(pnt_outEdges[edge] >= Com.upperBound()){
                         std::cout<<"Problem with neighbor : " << pnt_outEdges[edge] << " exit the upper limit: " << Com.upperBound() << std::endl;
