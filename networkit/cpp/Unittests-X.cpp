@@ -652,6 +652,7 @@ int main(int argc, char *argv[]) {
                               << myPartition.upperBound() << std::endl;
                     return 0;
                 }
+                std::cout<<"so far partition is good" << std::endl;
                 assert(myPartition[u] <= myPartition.upperBound());
             });
             StablePartitionNodes stablePartitionNodes(G, mplp.getPartition());
