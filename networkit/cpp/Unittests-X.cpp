@@ -655,7 +655,7 @@ int main(int argc, char *argv[]) {
                 assert(myPartition[u] <= myPartition.upperBound());
             });
             std::cout<<"so far partition is good" << std::endl;
-            StablePartitionNodes stablePartitionNodes(G, mplp.getPartition());
+            StablePartitionNodes stablePartitionNodes(G, mplp.getPartition(), mplp.getPartition());
             stablePartitionNodes.run();
             if (k>=SKIP_RUN) {
                 //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
@@ -720,7 +720,7 @@ int main(int argc, char *argv[]) {
             onlp.run();
             /// perform stable partitioning check
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
-            StablePartitionNodes stablePartitionNodes(G, onlp.getPartition());
+            StablePartitionNodes stablePartitionNodes(G, onlp.getPartition(), onlp.getPartition());
             stablePartitionNodes.setVectorized(true);
             stablePartitionNodes.run();
             if (k>=SKIP_RUN) {

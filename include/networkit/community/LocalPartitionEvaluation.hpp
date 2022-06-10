@@ -21,9 +21,11 @@ public:
      * @param P The partition that shall be evaluated.
      */
     LocalPartitionEvaluation(const Graph &G, const Partition &P);
+    LocalPartitionEvaluation(const Graph &G, const Partition &P, const Partition &C);
 protected:
     const Graph *G;
-    const Partition P;
+    const Partition *P;
+    const Partition Com;
 };
 
 }

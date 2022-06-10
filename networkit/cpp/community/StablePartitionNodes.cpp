@@ -45,23 +45,23 @@ void NetworKit::StablePartitionNodes::run() {
             if (G->degree(u) > 0) { // we consider isolated nodes to be stable.
                 std::map<index, count> labelWeights;
                 G->forNeighborsOf(u, [&](node v, edgeweight ew) {
-                    if(P[v] > P.upperBound()){
+                    if(Com[v] > Com.upperBound()){
                         std::cout<<"[stable]problem with label of the community: "
-                                  << P[v] << " where upper bound: "
-                                  << P.upperBound() << std::endl;
+                                  << Com[v] << " where upper bound: "
+                                  << Com.upperBound() << std::endl;
                         return;
                     }
-                    assert(P[v] <= P.upperBound());
-                    labelWeights[P[v]] += ew;
+                    assert(Com[v] <= Com.upperBound());
+                    labelWeights[Com[v]] += ew;
                 });
-                if(P[u] > P.upperBound()){
+                if(Com[u] > Com.upperBound()){
                     std::cout<<"[stable]problem with label of the community: "
-                              << P[u] << " where upper bound: "
-                              << P.upperBound() << std::endl;
+                              << Com[u] << " where upper bound: "
+                              << Com.upperBound() << std::endl;
                     return;
                 }
-                index ownLabel = P[u];
-                assert(P[u] <= P.upperBound());
+                index ownLabel = Com[u];
+                assert(Com[u] <= Com.upperBound());
                 double ownWeight = labelWeights[ownLabel];
 
                 if (ownWeight == 0) {
@@ -78,9 +78,9 @@ void NetworKit::StablePartitionNodes::run() {
         });
     }
     else {
-        const Partition C = P;
+        const Partition C = Com;
         index max_tid = omp_get_max_threads();
-//        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(P.upperBound(), 0));
+//        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(Com.upperBound(), 0));
         std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(G->upperNodeIdBound(), 0));
         const std::vector<f_weight> *outEdgeWeights = G->getOutEdgeWeights();
         const std::vector<node> *outEdges = G->getOutEdges();
@@ -99,13 +99,13 @@ void NetworKit::StablePartitionNodes::run() {
                 index i = 0;
                 for (i = 0; (i+16) <= _deg; i += 16) {
                     __m512i v_vec = _mm512_loadu_si512((__m512i * ) & pnt_outEdges[i]);
-                    __m512i C_vec = _mm512_i32gather_epi32(v_vec, &P[0], 4);
+                    __m512i C_vec = _mm512_i32gather_epi32(v_vec, &Com[0], 4);
                     _mm512_i32scatter_ps(&pnt_myNeighborLabel[0], C_vec, fl_set1, 4);
                 }
                 for (index edge = i; edge < _deg; ++edge) {
-                    pnt_myNeighborLabel[P[pnt_outEdges[edge]]] = -1.0;
+                    pnt_myNeighborLabel[Com[pnt_outEdges[edge]]] = -1.0;
                 }
-//                pnt_myNeighborLabel[P[u]] = 0;
+//                pnt_myNeighborLabel[Com[u]] = 0;
 
                 const   __m512i check_self_loop = _mm512_set1_epi32(u);
 #pragma unroll
@@ -116,7 +116,7 @@ void NetworKit::StablePartitionNodes::run() {
                     /// Mask to find u != v
                     const __mmask16 self_loop_mask = _mm512_cmpneq_epi32_mask(check_self_loop, v_vec);
                     /// Gather community of the neighbor vertices.
-                    __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &P[0], 4);
+                    __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &Com[0], 4);
                     /// Gather affinity of the corresponding community.
                     __m512 label_vec = _mm512_mask_i32gather_ps(fl_set0, self_loop_mask, C_vec, &pnt_myNeighborLabel[0], 4);
 
@@ -164,7 +164,7 @@ void NetworKit::StablePartitionNodes::run() {
                 for (index j= i; j < _deg; ++j) {
                     node v = pnt_outEdges[j];
                     if (u != v) {
-                        index c = P[v];
+                        index c = Com[v];
                         if (pnt_myNeighborLabel[c] == -1) {
                             /// found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                             pnt_myNeighborLabel[c] = 0;
@@ -174,7 +174,7 @@ void NetworKit::StablePartitionNodes::run() {
                     }
                 }
 
-                index my_c = P[u];
+                index my_c = Com[u];
                 f_weight my_com_weight = pnt_myNeighborLabel[my_c];
                 if(my_com_weight <= 0){
                     stableMarker[u] = false;
@@ -207,27 +207,27 @@ void NetworKit::StablePartitionNodes::run() {
     std::cout<<"done edge weight calculation" << std::endl;
     handler.assureRunning();
 
-    values.resize(P.upperBound(), 0);
+    values.resize(Com.upperBound(), 0);
 //    values.resize(G->upperNodeIdBound(), 0);
-    std::vector<count> partitionSizes(P.upperBound(), 0);
+    std::vector<count> partitionSizes(Com.upperBound(), 0);
 //    std::vector<count> partitionSizes(G->upperNodeIdBound(), 0);
     count stableCount = 0;
     std::cout<<"collect how many nodes are stable in which partition" << std::endl;
     // collect how many nodes are stable in which partition
     G->forNodes([&](node u) {
-        index label = P[u];
-        if(P[u] > P.upperBound()){
+        index label = Com[u];
+        if(Com[u] > Com.upperBound()){
             std::cout<<"[stable]problem with label of the community: "
-                      << P[u] << " where upper bound: "
-                      << P.upperBound() << std::endl;
+                      << Com[u] << " where upper bound: "
+                      << Com.upperBound() << std::endl;
             return;
         }
-        assert(label <= P.upperBound());
+        assert(label <= Com.upperBound());
         if(label >= partitionSizes.size()){
-            std::cout<<"partitionSizes is not correct; label: " << label << " max size: " << partitionSizes.size() << " upper bound: " << P.upperBound() <<std::endl;
+            std::cout<<"partitionSizes is not correct; label: " << label << " max size: " << partitionSizes.size() << " upper bound: " << Com.upperBound() <<std::endl;
         }
         if(label >= values.size()){
-            std::cout<<"values is not correct; label: " << label << " values size: " << values.size() << " upper bound: " << P.upperBound() <<std::endl;
+            std::cout<<"values is not correct; label: " << label << " values size: " << values.size() << " upper bound: " << Com.upperBound() <<std::endl;
         }
         if(u >= stableMarker.size()){
             std::cout<<"stableMarker is not correct; u: " << u << " out of bound: " << stableMarker.size() <<std::endl;
@@ -243,7 +243,7 @@ void NetworKit::StablePartitionNodes::run() {
     maximumValue = std::numeric_limits<double>::lowest();
     std::cout<<"calculate all average/max/min-values" << std::endl;
     // calculate all average/max/min-values
-//    for (index i = 0; i < P.upperBound(); ++i) {
+//    for (index i = 0; i < Com.upperBound(); ++i) {
     for (index i = 0; i < G->upperNodeIdBound(); ++i) {
         if (partitionSizes[i] > 0) {
             values[i] /= partitionSizes[i];
