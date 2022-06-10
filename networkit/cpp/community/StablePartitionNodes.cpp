@@ -185,7 +185,7 @@ void NetworKit::StablePartitionNodes::run() {
                 if(my_com_weight <= 0){
                     stableMarker[u] = false;
                 } else {
-                    /*const __m512i reg_C = _mm512_set1_epi32(my_c);
+                    const __m512i reg_C = _mm512_set1_epi32(my_c);
 
                     for (i = 0; (i + 16) <= neigh_counter; i += 16) {
                         /// Load at most 16 neighbor community.
@@ -199,14 +199,13 @@ void NetworKit::StablePartitionNodes::run() {
                             stableMarker[u] = false;
                             break;
                         }
-                    }*/
-                   /* i=0;
+                    }
                     for (auto j=i; j<neigh_counter; ++j) {
                         if (my_c != pnt_neigh_comm[j] && pnt_myNeighborLabel[j] >= my_com_weight) {
                             stableMarker[u] = false;
                             break;
                         }
-                    }*/
+                    }
                 }
             }
         });
