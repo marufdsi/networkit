@@ -108,7 +108,7 @@ void NetworKit::StablePartitionNodes::run() {
 //                pnt_myNeighborLabel[Com[u]] = 0;
 
                 const   __m512i check_self_loop = _mm512_set1_epi32(u);
-#pragma unroll
+/*#pragma unroll
                 for (i = 0; (i+16) <= _deg; i += 16) {
                     __m512i v_vec = _mm512_loadu_si512((__m512i *) &pnt_outEdges[i]);
                     /// Load at most 16 neighbor vertex edge weight.
@@ -157,10 +157,11 @@ void NetworKit::StablePartitionNodes::run() {
                             pnt_myNeighborLabel[remaining_comm[j]] += weight_not_processed[j];
                         }
                     }
-                }
+                }*/
 
                 pnt_outEdges = &outEdges[u][0];
                 pnt_outEdgeWeight = &outEdgeWeights[u][0];
+                i=0;
                 for (index j= i; j < _deg; ++j) {
                     node v = pnt_outEdges[j];
                     if (u != v) {
