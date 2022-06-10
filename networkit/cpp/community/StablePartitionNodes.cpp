@@ -167,7 +167,7 @@ void NetworKit::StablePartitionNodes::run() {
                     }
                 }*/
 
-                /*pnt_outEdges = &outEdges[u][0];
+                pnt_outEdges = &outEdges[u][0];
                 pnt_outEdgeWeight = &outEdgeWeights[u][0];
                 i=0;
                 for (index j= i; j < _deg; ++j) {
@@ -184,7 +184,7 @@ void NetworKit::StablePartitionNodes::run() {
                         }
                         pnt_myNeighborLabel[c] += pnt_outEdgeWeight[j];
                     }
-                }*/
+                }
 
                 index my_c = Com[u];
                 f_weight my_com_weight = pnt_myNeighborLabel[my_c];
