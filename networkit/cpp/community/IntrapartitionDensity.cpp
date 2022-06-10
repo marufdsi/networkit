@@ -13,21 +13,21 @@ void NetworKit::IntrapartitionDensity::run() {
     weightedAverage = 0;
     values.clear();
 
-    std::vector<count> clusterSizes(P->upperBound(), 0);
-    std::vector<count> intraEdges(P->upperBound(), 0);
+    std::vector<count> clusterSizes(P.upperBound(), 0);
+    std::vector<count> intraEdges(P.upperBound(), 0);
 
     handler.assureRunning();
 
     G->forEdges([&](node u, node v) {
-        if ((*P)[u] == (*P)[v]) {
-            ++intraEdges[(*P)[u]];
+        if (P[u] == P[v]) {
+            ++intraEdges[P[u]];
         }
     });
 
     handler.assureRunning();
 
     G->forNodes([&](node u) {
-        ++clusterSizes[(*P)[u]];
+        ++clusterSizes[P[u]];
     });
 
     handler.assureRunning();
@@ -36,7 +36,7 @@ void NetworKit::IntrapartitionDensity::run() {
     count intraEdgesSum = 0;
     count possibleIntraEdgesSum = 0;
 
-    values.resize(P->upperBound(), 0);
+    values.resize(P.upperBound(), 0);
 
     for (index i = 0; i < clusterSizes.size(); ++i) {
         if (clusterSizes[i] > 0) {
