@@ -645,7 +645,7 @@ int main(int argc, char *argv[]) {
             mplp.run();
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
             Partition myPartition = mplp.getPartition();
-            G->balancedParallelForNodes([&](node u) {
+            G.balancedParallelForNodes([&](node u) {
                 assert(myPartition[u] <= myPartition.upperBound());
             });
             StablePartitionNodes stablePartitionNodes(G, mplp.getPartition());
