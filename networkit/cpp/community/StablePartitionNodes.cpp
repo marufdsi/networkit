@@ -207,10 +207,10 @@ void NetworKit::StablePartitionNodes::run() {
         index label = (*P)[u];
         assert(label <= P->upperBound());
         if(label >= partitionSizes.size()){
-            std::cout<<"partitionSizes is not correct; label: " << label << " max size: " << partitionSizes.size() <<std::endl;
+            std::cout<<"partitionSizes is not correct; label: " << label << " max size: " << partitionSizes.size() << " upper bound: " << P->upperBound() <<std::endl;
         }
         if(label >= values.size()){
-            std::cout<<"values is not correct; label: " << label << " values size: " << values.size() <<std::endl;
+            std::cout<<"values is not correct; label: " << label << " values size: " << values.size() << " upper bound: " << P->upperBound() <<std::endl;
         }
         if(u >= stableMarker.size()){
             std::cout<<"stableMarker is not correct; u: " << u << " out of bound: " << stableMarker.size() <<std::endl;
