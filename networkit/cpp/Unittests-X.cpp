@@ -709,9 +709,9 @@ int main(int argc, char *argv[]) {
             onlp.run();
             /// perform stable partitioning check
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
-//            StablePartitionNodes stablePartitionNodes(gCopy, onlp.getPartition());
-//            stablePartitionNodes.setVectorized(true);
-//            stablePartitionNodes.run();
+            StablePartitionNodes stablePartitionNodes(gCopy, onlp.getPartition());
+            stablePartitionNodes.setVectorized(true);
+            stablePartitionNodes.run();
             if (k>=SKIP_RUN) {
                 //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
                 clock_gettime(CLOCK_REALTIME, &end);

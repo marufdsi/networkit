@@ -62,7 +62,7 @@ void NetworKit::StablePartitionNodes::run() {
     } else {
         const Partition C = (*P);
         index max_tid = omp_get_max_threads();
-        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(G->upperNodeIdBound(), 0));
+        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(P->upperBound(), 0));
         const std::vector<f_weight> *outEdgeWeights = G->getOutEdgeWeights();
         const std::vector<node> *outEdges = G->getOutEdges();
         index** neigh_comm = (index **) malloc(max_tid * sizeof(index *));
@@ -80,13 +80,13 @@ void NetworKit::StablePartitionNodes::run() {
                 index i = 0;
                 for (i = 0; (i+16) <= _deg; i += 16) {
                     __m512i v_vec = _mm512_loadu_si512((__m512i * ) & pnt_outEdges[i]);
-                    __m512i C_vec = _mm512_i32gather_epi32(v_vec, &C[0], 4);
+                    __m512i C_vec = _mm512_i32gather_epi32(v_vec, &(*P)[0], 4);
                     _mm512_i32scatter_ps(&pnt_myNeighborLabel[0], C_vec, fl_set1, 4);
                 }
                 for (index edge = i; edge < _deg; ++edge) {
-                    pnt_myNeighborLabel[C[pnt_outEdges[edge]]] = -1.0;
+                    pnt_myNeighborLabel[(*P)[pnt_outEdges[edge]]] = -1.0;
                 }
-                pnt_myNeighborLabel[C[u]] = 0;
+//                pnt_myNeighborLabel[(*P)[u]] = 0;
 
                 const   __m512i check_self_loop = _mm512_set1_epi32(u);
 #pragma unroll
@@ -97,7 +97,7 @@ void NetworKit::StablePartitionNodes::run() {
                     /// Mask to find u != v
                     const __mmask16 self_loop_mask = _mm512_cmpneq_epi32_mask(check_self_loop, v_vec);
                     /// Gather community of the neighbor vertices.
-                    __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &C[0], 4);
+                    __m512i C_vec = _mm512_mask_i32gather_epi32(set0, self_loop_mask, v_vec, &(*P)[0], 4);
                     /// Gather affinity of the corresponding community.
                     __m512 label_vec = _mm512_mask_i32gather_ps(fl_set0, self_loop_mask, C_vec, &pnt_myNeighborLabel[0], 4);
 
@@ -145,7 +145,7 @@ void NetworKit::StablePartitionNodes::run() {
                 for (index j= i; j < _deg; ++j) {
                     node v = pnt_outEdges[j];
                     if (u != v) {
-                        index c = C[v];
+                        index c = (*P)[v];
                         if (pnt_myNeighborLabel[c] == -1) {
                             /// found the neighbor for the first time, initialize to 0 and add to list of neighboring communities
                             pnt_myNeighborLabel[c] = 0;
@@ -155,7 +155,7 @@ void NetworKit::StablePartitionNodes::run() {
                     }
                 }
 
-                index my_c = C[u];
+                index my_c = (*P)[u];
                 f_weight my_com_weight = pnt_myNeighborLabel[my_c];
                 if(my_com_weight <= 0){
                     stableMarker[u] = false;
@@ -171,6 +171,12 @@ void NetworKit::StablePartitionNodes::run() {
                         __m512 label_D_vec = _mm512_i32gather_ps(D_vec, &pnt_myNeighborLabel[0], 4);
                         f_weight max_lavel_val = _mm512_mask_reduce_max_ps(different_comm_mask, label_D_vec);
                         if (max_lavel_val > my_com_weight) {
+                            stableMarker[u] = false;
+                            break;
+                        }
+                    }
+                    for (auto j=i; j<neigh_counter; ++j) {
+                        if (my_c != pnt_neigh_comm[j] && pnt_myNeighborLabel[j] >= my_com_weight) {
                             stableMarker[u] = false;
                             break;
                         }
