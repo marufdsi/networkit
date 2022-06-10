@@ -196,8 +196,18 @@ void NetworKit::StablePartitionNodes::run() {
     std::cout<<"collect how many nodes are stable in which partition" << std::endl;
     // collect how many nodes are stable in which partition
     G->forNodes([&](node u) {
-        ++partitionSizes[(*P)[u]];
-        values[(*P)[u]] += stableMarker[u];
+        index label = (*P)[u];
+        if(label >= partitionSizes.size()){
+            std::cout<<"partitionSizes is not correct; label: " << label << " max size: " << partitionSizes.size() <<std::endl;
+        }
+        if(label >= values.size()){
+            std::cout<<"values is not correct; label: " << label << " values size: " << values.size() <<std::endl;
+        }
+        if(u >= stableMarker.size()){
+            std::cout<<"stableMarker is not correct; u: " << u << " out of bound: " << stableMarker.size() <<std::endl;
+        }
+        ++partitionSizes[label];
+        values[label] += stableMarker[u];
         stableCount += stableMarker[u];
     });
 
