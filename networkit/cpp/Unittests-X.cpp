@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
         _inputMethod = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
 //    std::cout<<"Input Method:" << _inputMethod << std::endl;
-    uint64_t _iterations = 25;
+    count _iterations = 25;
     if (argc > argi) {
         _iterations = (uint64_t)std::strtol(argv[argi++], (char**)NULL, 10);
     }
@@ -574,7 +574,7 @@ int main(int argc, char *argv[]) {
         std::cout << "***** Legacy PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
-            PLP lp(gCopy, std::numeric_limits<uint64_t>::max(), _iterations);
+            PLP lp(gCopy, (count)std::numeric_limits<uint64_t>::max(), _iterations);
 #if POWER_LOG
             //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
             rapl_sysfs_init();
@@ -633,7 +633,7 @@ int main(int argc, char *argv[]) {
         std::cout << "***** Modified PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
-            MPLP mplp(gCopy, std::numeric_limits<uint64_t>::max(), _iterations);
+            MPLP mplp(gCopy, (count)std::numeric_limits<uint64_t>::max(), _iterations);
 #if POWER_LOG
             //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
             rapl_sysfs_init();
@@ -697,7 +697,7 @@ int main(int argc, char *argv[]) {
         std::cout << "***** One Neighbor PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
-            ONLP onlp(gCopy, std::numeric_limits<uint64_t>::max(), _iterations);
+            ONLP onlp(gCopy, (count)std::numeric_limits<uint64_t>::max(), _iterations);
 #if POWER_LOG
             //            modifiedPLM.setupMPLMPowerFile(_graphName, std::stoi(ppn));
             rapl_sysfs_init();
