@@ -45,10 +45,21 @@ void NetworKit::StablePartitionNodes::run() {
             if (G->degree(u) > 0) { // we consider isolated nodes to be stable.
                 std::map<index, count> labelWeights;
                 G->forNeighborsOf(u, [&](node v, edgeweight ew) {
+                    if((*P)[v] > P->upperBound()){
+                        std::cout<<"[stable]problem with label of the community: "
+                                  << (*P)[v] << " where upper bound: "
+                                  << P->upperBound() << std::endl;
+                        return;
+                    }
                     assert((*P)[v] <= P->upperBound());
                     labelWeights[(*P)[v]] += ew;
                 });
-
+                if((*P)[u] > P->upperBound()){
+                    std::cout<<"[stable]problem with label of the community: "
+                              << (*P)[u] << " where upper bound: "
+                              << P->upperBound() << std::endl;
+                    return;
+                }
                 index ownLabel = (*P)[u];
                 assert((*P)[u] <= P->upperBound());
                 double ownWeight = labelWeights[ownLabel];
@@ -205,6 +216,12 @@ void NetworKit::StablePartitionNodes::run() {
     // collect how many nodes are stable in which partition
     G->forNodes([&](node u) {
         index label = (*P)[u];
+        if((*P)[u] > P->upperBound()){
+            std::cout<<"[stable]problem with label of the community: "
+                      << (*P)[u] << " where upper bound: "
+                      << P->upperBound() << std::endl;
+            return;
+        }
         assert(label <= P->upperBound());
         if(label >= partitionSizes.size()){
             std::cout<<"partitionSizes is not correct; label: " << label << " max size: " << partitionSizes.size() << " upper bound: " << P->upperBound() <<std::endl;
