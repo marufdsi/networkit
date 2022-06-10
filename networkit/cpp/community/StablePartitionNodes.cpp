@@ -86,7 +86,7 @@ void NetworKit::StablePartitionNodes::run() {
 //        for (int i = 0; i < max_tid; ++i) {
 //            posix_memalign((void **) &neigh_comm[i], alignment, Com.upperBound() * sizeof(index));
 //        }
-            std::cout<<"Initialization done" << std::endl;
+            std::cout<<"Initialization done! weighted graph: " << G->isWeighted() << std::endl;
         G->balancedParallelForNodes([&](node u) {
             count _deg = G->degree(u);
             if (_deg > 0) {
@@ -182,7 +182,7 @@ void NetworKit::StablePartitionNodes::run() {
                             }
                             pnt_neigh_comm[neigh_counter++] = c;
                         }
-                        pnt_myNeighborLabel[c] += G->isWeighted() ? pnt_outEdgeWeight[j] : fdefaultEdgeWeight;
+                        pnt_myNeighborLabel[c] += fdefaultEdgeWeight;
                     }
                 }
 
