@@ -64,7 +64,8 @@ void NetworKit::StablePartitionNodes::run() {
     } else {
         const Partition C = (*P);
         index max_tid = omp_get_max_threads();
-        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(P->upperBound(), 0));
+//        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(P->upperBound(), 0));
+        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(G->upperNodeIdBound(), 0));
         const std::vector<f_weight> *outEdgeWeights = G->getOutEdgeWeights();
         const std::vector<node> *outEdges = G->getOutEdges();
         index** neigh_comm = (index **) malloc(max_tid * sizeof(index *));
@@ -190,8 +191,10 @@ void NetworKit::StablePartitionNodes::run() {
     std::cout<<"done edge weight calculation" << std::endl;
     handler.assureRunning();
 
-    values.resize(P->upperBound(), 0);
-    std::vector<count> partitionSizes(P->upperBound(), 0);
+//    values.resize(P->upperBound(), 0);
+    values.resize(G->upperNodeIdBound(), 0);
+//    std::vector<count> partitionSizes(P->upperBound(), 0);
+    std::vector<count> partitionSizes(G->upperNodeIdBound(), 0);
     count stableCount = 0;
     std::cout<<"collect how many nodes are stable in which partition" << std::endl;
     // collect how many nodes are stable in which partition
@@ -217,7 +220,8 @@ void NetworKit::StablePartitionNodes::run() {
     maximumValue = std::numeric_limits<double>::lowest();
     std::cout<<"calculate all average/max/min-values" << std::endl;
     // calculate all average/max/min-values
-    for (index i = 0; i < P->upperBound(); ++i) {
+//    for (index i = 0; i < P->upperBound(); ++i) {
+    for (index i = 0; i < G->upperNodeIdBound(); ++i) {
         if (partitionSizes[i] > 0) {
             values[i] /= partitionSizes[i];
             unweightedAverage += values[i];
