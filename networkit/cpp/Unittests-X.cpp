@@ -646,6 +646,12 @@ int main(int argc, char *argv[]) {
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
             Partition myPartition = mplp.getPartition();
             G.balancedParallelForNodes([&](node u) {
+                if(myPartition[u] > myPartition.upperBound()){
+                    std::cout<<"problem with label of the community: "
+                              << myPartition[u] " where upper bound: "
+                              << myPartition.upperBound() << endl;
+                    return 0;
+                }
                 assert(myPartition[u] <= myPartition.upperBound());
             });
             StablePartitionNodes stablePartitionNodes(G, mplp.getPartition());
