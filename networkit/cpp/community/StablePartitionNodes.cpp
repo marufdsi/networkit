@@ -77,14 +77,16 @@ void NetworKit::StablePartitionNodes::run() {
         });
     }
     else {
-        const Partition C = Com;
         index max_tid = omp_get_max_threads();
-//        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(Com.upperBound(), 0));
         std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(Com.upperBound(), 0));
         const std::vector<f_weight> *outEdgeWeights = G->getOutEdgeWeights();
         const std::vector<node> *outEdges = G->getOutEdges();
         index** neigh_comm = (index **) malloc(max_tid * sizeof(index *));
-        std::cout<<"Initialization done" << std::endl;
+        size_t alignment = 64;
+        for (int i = 0; i < max_tid; ++i) {
+            posix_memalign((void **) &neigh_comm[i], alignment, Com.upperBound() * sizeof(index));
+        }
+            std::cout<<"Initialization done" << std::endl;
         G->balancedParallelForNodes([&](node u) {
             count _deg = G->degree(u);
             if (_deg > 0) {
