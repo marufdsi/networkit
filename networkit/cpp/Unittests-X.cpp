@@ -649,7 +649,7 @@ int main(int argc, char *argv[]) {
                 if(myPartition[u] > myPartition.upperBound()){
                     std::cout<<"problem with label of the community: "
                               << myPartition[u] << " where upper bound: "
-                              << myPartition.upperBound() << endl;
+                              << myPartition.upperBound() << std::endl;
                     return 0;
                 }
                 assert(myPartition[u] <= myPartition.upperBound());
