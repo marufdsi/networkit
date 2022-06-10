@@ -10,6 +10,7 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <immintrin.h>
+#include <iostream>
 
 void NetworKit::StablePartitionNodes::run() {
     hasRun = false;
