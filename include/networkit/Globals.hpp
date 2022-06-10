@@ -11,10 +11,9 @@
 #include <cstdint>
 #include <limits>
 #include <utility>
-
 namespace NetworKit {
 using index = uint32_t; ///< more expressive name for an index into an array
-
+using sint = int32_t;
 /// Should be used in OpenMP parallel for-loops and is associated with unsigned semantics.
 /// On MSVC it falls back to being signed, as MSVC does not support unsigned parallel fors.
 #ifdef _MSC_VER

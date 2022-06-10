@@ -29,6 +29,13 @@ public:
      */
     bool isStable(node u) const { assureFinished(); return static_cast<bool>(stableMarker[u]); };
 
+    void setVectorized(bool isVectorized){
+        doVectorize = isVectorized;
+    }
+    bool isVectorized(){
+        return doVectorize;
+    }
+
     /**
      * If small values are better. Here large values are better.
      *
@@ -37,6 +44,7 @@ public:
     bool isSmallBetter() const override { return false; }
 private:
     std::vector<uint8_t> stableMarker;
+    bool doVectorize = false;
 };
 
 }
