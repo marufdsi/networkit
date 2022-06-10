@@ -80,7 +80,7 @@ void NetworKit::StablePartitionNodes::run() {
         const Partition C = Com;
         index max_tid = omp_get_max_threads();
 //        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(Com.upperBound(), 0));
-        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(G->upperNodeIdBound(), 0));
+        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(Com.upperBound(), 0));
         const std::vector<f_weight> *outEdgeWeights = G->getOutEdgeWeights();
         const std::vector<node> *outEdges = G->getOutEdges();
         index** neigh_comm = (index **) malloc(max_tid * sizeof(index *));
