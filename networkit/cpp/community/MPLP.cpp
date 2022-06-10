@@ -76,22 +76,16 @@ void MPLP::run() {
     bool hasEdgeId = G->hasEdgeIds();
     outEdgeWeights = G->getOutEdgeWeights();
     outEdges = G->getOutEdges();
-    index max_sub = 0, min_sub = z;
     for (index i=0; i<z; ++i) {
         outDegree.push_back(outEdges[i].size());
         data[i] = i;
-        if(data[i] > max_sub)
-            max_sub = data[i];
-        if(data[i] < min_sub)
-            min_sub = data[i];
     }
 
     std::vector<std::vector<f_weight> >labelWeights(omp_get_max_threads(), std::vector<f_weight>(omega));
     std::vector<std::vector<f_weight> >uniqueLabels(omp_get_max_threads(), std::vector<f_weight>(z));
 
     std::cout<< "maxIterations: " << maxIterations << " max threads: " << omp_get_max_threads()
-              << " Threshold: " << this->updateThreshold << " max sub: " << max_sub << " min sub: "
-              << min_sub << " weighted: " << isGraphWeighted << " hasIndex: " << hasEdgeId
+              << " Threshold: " << this->updateThreshold << " weighted: " << isGraphWeighted << " hasIndex: " << hasEdgeId
               << std::endl;
     // propagate labels
     while ((nUpdated > this->updateThreshold)  && (nIterations < maxIterations)) { // as long as a label has changed... or maximum iterations reached

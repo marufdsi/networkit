@@ -44,9 +44,13 @@ void NetworKit::StablePartitionNodes::run() {
         G->balancedParallelForNodes([&](node u) {
             if (G->degree(u) > 0) { // we consider isolated nodes to be stable.
                 std::map<index, count> labelWeights;
-                G->forNeighborsOf(u, [&](node v, edgeweight ew) { labelWeights[(*P)[v]] += ew; });
+                G->forNeighborsOf(u, [&](node v, edgeweight ew) {
+                    assert((*P)[v] <= P->upperBound());
+                    labelWeights[(*P)[v]] += ew;
+                });
 
                 index ownLabel = (*P)[u];
+                assert((*P)[u] <= P->upperBound());
                 double ownWeight = labelWeights[ownLabel];
 
                 if (ownWeight == 0) {
@@ -61,7 +65,8 @@ void NetworKit::StablePartitionNodes::run() {
                 }
             }
         });
-    } else {
+    }
+    else {
         const Partition C = (*P);
         index max_tid = omp_get_max_threads();
 //        std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(P->upperBound(), 0));
@@ -191,15 +196,16 @@ void NetworKit::StablePartitionNodes::run() {
     std::cout<<"done edge weight calculation" << std::endl;
     handler.assureRunning();
 
-//    values.resize(P->upperBound(), 0);
-    values.resize(G->upperNodeIdBound(), 0);
-//    std::vector<count> partitionSizes(P->upperBound(), 0);
-    std::vector<count> partitionSizes(G->upperNodeIdBound(), 0);
+    values.resize(P->upperBound(), 0);
+//    values.resize(G->upperNodeIdBound(), 0);
+    std::vector<count> partitionSizes(P->upperBound(), 0);
+//    std::vector<count> partitionSizes(G->upperNodeIdBound(), 0);
     count stableCount = 0;
     std::cout<<"collect how many nodes are stable in which partition" << std::endl;
     // collect how many nodes are stable in which partition
     G->forNodes([&](node u) {
         index label = (*P)[u];
+        assert(label <= P->upperBound());
         if(label >= partitionSizes.size()){
             std::cout<<"partitionSizes is not correct; label: " << label << " max size: " << partitionSizes.size() <<std::endl;
         }

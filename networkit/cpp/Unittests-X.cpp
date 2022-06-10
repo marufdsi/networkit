@@ -644,7 +644,11 @@ int main(int argc, char *argv[]) {
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
             mplp.run();
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
-            StablePartitionNodes stablePartitionNodes(gCopy, mplp.getPartition());
+            Partition myPartition = mplp.getPartition();
+            G->balancedParallelForNodes([&](node u) {
+                assert(myPartition[u] <= myPartition.upperBound());
+            });
+            StablePartitionNodes stablePartitionNodes(G, mplp.getPartition());
             stablePartitionNodes.run();
             if (k>=SKIP_RUN) {
                 //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
@@ -709,7 +713,7 @@ int main(int argc, char *argv[]) {
             onlp.run();
             /// perform stable partitioning check
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
-            StablePartitionNodes stablePartitionNodes(gCopy, onlp.getPartition());
+            StablePartitionNodes stablePartitionNodes(G, onlp.getPartition());
             stablePartitionNodes.setVectorized(true);
             stablePartitionNodes.run();
             if (k>=SKIP_RUN) {
