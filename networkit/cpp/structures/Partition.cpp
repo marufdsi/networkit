@@ -128,7 +128,7 @@ std::set<index> Partition::getMembers(index s) const {
     return subset;
 }
 
-std::vector<index> &Partition::getVector() {
+std::vector<index> &Partition::getVector(){
     return data;
 }
 

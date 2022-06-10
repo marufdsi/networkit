@@ -60,7 +60,7 @@ void NetworKit::StablePartitionNodes::run() {
             }
         });
     } else {
-        const std::vector<index> C = P->getVector();
+        const Partition C = (*P);
         index max_tid = omp_get_max_threads();
         std::vector<std::vector<f_weight>> labelWeights(max_tid, std::vector<f_weight>(G->upperNodeIdBound(), 0));
         const std::vector<f_weight> *outEdgeWeights = G->getOutEdgeWeights();
