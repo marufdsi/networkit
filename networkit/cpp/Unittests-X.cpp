@@ -648,7 +648,7 @@ int main(int argc, char *argv[]) {
             G.balancedParallelForNodes([&](node u) {
                 if(myPartition[u] > myPartition.upperBound()){
                     std::cout<<"problem with label of the community: "
-                              << myPartition[u] " where upper bound: "
+                              << myPartition[u] << " where upper bound: "
                               << myPartition.upperBound() << endl;
                     return 0;
                 }
