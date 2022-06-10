@@ -644,17 +644,6 @@ int main(int argc, char *argv[]) {
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
             mplp.run();
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
-            Partition myPartition = mplp.getPartition();
-            G.balancedParallelForNodes([&](node u) {
-                if(myPartition[u] > myPartition.upperBound()){
-                    std::cout<<"problem with label of the community: "
-                              << myPartition[u] << " where upper bound: "
-                              << myPartition.upperBound() << std::endl;
-                    return 0;
-                }
-                assert(myPartition[u] <= myPartition.upperBound());
-            });
-            std::cout<<"so far partition is good" << std::endl;
             StablePartitionNodes stablePartitionNodes(G, mplp.getPartition(), mplp.getPartition());
             stablePartitionNodes.run();
             if (k>=SKIP_RUN) {
