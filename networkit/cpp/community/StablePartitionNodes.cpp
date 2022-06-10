@@ -37,6 +37,7 @@ void NetworKit::StablePartitionNodes::run() {
     /// 512 bit integer register initialize by all -1
     const __m512i set_minus_1 = _mm512_set1_epi32(-1);
 
+    std::cout<<"start edge weight calculation" << std::endl;
     if(!isVectorized()) {
         // first determine which nodes are stable
         G->balancedParallelForNodes([&](node u) {
@@ -185,13 +186,13 @@ void NetworKit::StablePartitionNodes::run() {
             }
         });
     }
-
+    std::cout<<"done edge weight calculation" << std::endl;
     handler.assureRunning();
 
     values.resize(P->upperBound(), 0);
     std::vector<count> partitionSizes(P->upperBound(), 0);
     count stableCount = 0;
-
+    std::cout<<"collect how many nodes are stable in which partition" << std::endl;
     // collect how many nodes are stable in which partition
     G->forNodes([&](node u) {
         ++partitionSizes[(*P)[u]];
@@ -203,7 +204,7 @@ void NetworKit::StablePartitionNodes::run() {
     unweightedAverage = 0;
     minimumValue = std::numeric_limits<double>::max();
     maximumValue = std::numeric_limits<double>::lowest();
-
+    std::cout<<"calculate all average/max/min-values" << std::endl;
     // calculate all average/max/min-values
     for (index i = 0; i < P->upperBound(); ++i) {
         if (partitionSizes[i] > 0) {
@@ -214,10 +215,10 @@ void NetworKit::StablePartitionNodes::run() {
             ++numClusters;
         }
     }
-
+    std::cout<<"done calculation" << std::endl;
     unweightedAverage /= numClusters;
     weightedAverage = stableCount * 1.0 / G->numberOfNodes();
-
+    std::cout<<"return" << std::endl;
     handler.assureRunning(); // make sure we do not ignore the signal sent by the user
 
     hasRun = true;
