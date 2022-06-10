@@ -23,7 +23,7 @@ public:
     LocalPartitionEvaluation(const Graph &G, const Partition &P);
 protected:
     const Graph *G;
-    const Partition *P;
+    const Partition P;
 };
 
 }
