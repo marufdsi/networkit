@@ -61,6 +61,7 @@
 #include <networkit/community/CoverF1Similarity.hpp>
 #include <networkit/community/LFM.hpp>
 #include <networkit/community/OverlappingNMIDistance.hpp>
+#include <networkit/community/StablePartitionNodes.hpp>
 #include <networkit/scd/LocalTightnessExpansion.hpp>
 
 #include <tlx/unused.hpp>
@@ -86,7 +87,7 @@
 #endif
 
 #ifndef POWER_LOG
-#define POWER_LOG true
+#define POWER_LOG false
 #endif
 
 #ifndef SKYLAKE_X_LOG
@@ -219,8 +220,8 @@ int main(int argc, char *argv[]) {
 
 #if OVERALL_LOG
     std::ofstream graph_log;
-    std::string conference = "CCPE_NO_VEC_Results/";
-    std::string folderName = conference + (version >=4 ? "LP1/" : "LM/");
+    std::string conference = "Vec_Results/";
+    std::string folderName = conference + (version >=4 ? "LP/" : "LM/");
     if (mkdir(folderName.c_str(), 0777) == -1)
         std::cout<<"Directory " << folderName << " is already exist" << std::endl;
     else
@@ -232,16 +233,18 @@ int main(int argc, char *argv[]) {
 
     bool existing_file = infile.good();
     if (!existing_file) {
-        graph_log << "GraphName" << "," << "Version" << "," << "Nodes" << ","<< "Edges" << "," << "Wall Time" << ","
-                  << "CPU Time" << "," << "Clusters" << "," << "Modularity" << "," << "MaxIterations" << "," << "FirstMoveTime"
-                  << "," << "MoveTime" << "," << "CoarsenTime" << "," << "RefineTime" << "," << "Threads" << "," << "CacheLevel"
-                  << "," << "CacheMissCount" << "," << "Refine" << std::endl;
+        graph_log << "GraphName" << "," << "Version" << "," << "Nodes" << ","<< "Edges" << ","
+                  << "Wall Time" << "," << "CPU Time" << "," << "Clusters" << "," << "Modularity"
+                  << "," << "MaxIterations" << "," << "FirstMoveTime" << "," << "MoveTime" << ","
+                  << "CoarsenTime" << "," << "RefineTime" << "," << "Threads" << "," << "CacheLevel"
+                  << "," << "CacheMissCount" << "," << "Refine" << "," << "StablePartitioningTime"
+                  << std::endl;
     }
     infile.close();
 #endif
     count z = G.upperNodeIdBound();
     count edges = G.numberOfEdges();
-    struct timespec start, cpu_start, end, cpu_end;
+    struct timespec start, cpu_start, end, cpu_end, stable_partition_start;
     double et_plm=0, et_mplm=0.0, et_onpl=0, et_ovpl=0, plm_mod=0, onpl_mod=0, ovpl_mod=0, mplm_mod=0;
     count plm_subsets=0, onpl_subsets=0, ovpl_subsets=0, mplm_subsets=0;
 
@@ -294,7 +297,7 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "L1D"
-                          << "," << 0 << "," << refine << std::endl;
+                          << "," << 0 << "," << refine << "," << 0 << std::endl;
 #endif
                 et_plm += cpu_elapsed;
                 plm_subsets += comm;
@@ -309,7 +312,8 @@ int main(int argc, char *argv[]) {
         std::cout << "number of clusters: " << plm_subsets << std::endl;
         std::cout << "modularity: " << plm_mod << std::endl;
 
-    } else if (version == 1) {
+    }
+    else if (version == 1) {
         std::cout << "***** Vectorized Row Version *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -380,7 +384,7 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"
-                          << "," << cache_count << "," << refine << std::endl;
+                          << "," << cache_count << "," << refine << "," << 0 << std::endl;
 #endif
 #endif
                 et_onpl += cpu_elapsed;
@@ -396,7 +400,8 @@ int main(int argc, char *argv[]) {
         std::cout << "number of clusters: " << onpl_subsets << std::endl;
         std::cout << "modularity: " << onpl_mod << std::endl;
 
-    } else if (version == 2) {
+    }
+    else if (version == 2) {
         std::cout << "***** Vectorized Block Version *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -466,7 +471,7 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"
-                          << "," << cache_count << "," << refine << std::endl;
+                          << "," << cache_count << "," << refine << "," << 0 << std::endl;
 #endif
 #endif
                 et_ovpl += cpu_elapsed;
@@ -482,7 +487,8 @@ int main(int argc, char *argv[]) {
         std::cout << "number of clusters: " << ovpl_subsets << std::endl;
         std::cout << "modularity: " << ovpl_mod << std::endl;
 
-    } else if(version == 3) {
+    }
+    else if(version == 3) {
         std::cout << "***** Modified Legacy Version *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -548,7 +554,7 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"
-                          << "," << cache_count << "," << refine << std::endl;
+                          << "," << cache_count << "," << refine << "," << 0 << std::endl;
 #endif
 #endif
                 et_mplm += cpu_elapsed;
@@ -563,7 +569,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
         std::cout << "number of clusters: " << mplm_subsets << std::endl;
         std::cout << "modularity: " << mplm_mod << std::endl;
-    } else if(version == 4) {
+    }
+    else if(version == 4) {
         std::cout << "***** Legacy PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -607,7 +614,7 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << 0 << "," << run_time << ","
                           << 0 << "," << 0 << "," << ppn << "," << "LL"
-                          << "," << 0 << "," << 0 << std::endl;
+                          << "," << 0 << "," << 0 << "," << 0 << std::endl;
 #endif
                 et_mplm += cpu_elapsed;
                 mplm_subsets += comm;
@@ -621,7 +628,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
         std::cout << "number of clusters: " << mplm_subsets << std::endl;
         std::cout << "modularity: " << mplm_mod << std::endl;
-    } else if(version == 5) {
+    }
+    else if(version == 5) {
         std::cout << "***** Modified PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -635,6 +643,9 @@ int main(int argc, char *argv[]) {
             clock_gettime(CLOCK_REALTIME, &start);
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
             mplp.run();
+            clock_gettime(CLOCK_REALTIME, &stable_partition_start);
+            StablePartitionNodes stablePartitionNodes(gCopy, mplp.getPartition());
+            stablePartitionNodes.run();
             if (k>=SKIP_RUN) {
                 //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
                 clock_gettime(CLOCK_REALTIME, &end);
@@ -642,6 +653,8 @@ int main(int argc, char *argv[]) {
                 long seconds = end.tv_sec - start.tv_sec;
                 long nanoseconds = end.tv_nsec - start.tv_nsec;
                 double elapsed = seconds + nanoseconds*1e-9;
+                double stable_partitioning_time = (end.tv_sec - stable_partition_start.tv_sec) +
+                                              (end.tv_nsec - stable_partition_start.tv_nsec)*1e-9;
                 seconds = cpu_end.tv_sec - cpu_start.tv_sec;
                 nanoseconds = cpu_end.tv_nsec - cpu_start.tv_nsec;
                 double cpu_elapsed = seconds + nanoseconds*1e-9;
@@ -665,7 +678,7 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << 0 << "," << run_time << ","
                           << 0 << "," << 0 << "," << ppn << "," << "LL"
-                          << "," << 0 << "," << 0 << std::endl;
+                          << "," << 0 << "," << 0 << "," << stable_partitioning_time << std::endl;
 #endif
                 et_mplm += cpu_elapsed;
                 mplm_subsets += comm;
@@ -679,7 +692,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
         std::cout << "number of clusters: " << mplm_subsets << std::endl;
         std::cout << "modularity: " << mplm_mod << std::endl;
-    } else if(version == 6) {
+    }
+    else if(version == 6) {
         std::cout << "***** One Neighbor PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -693,6 +707,11 @@ int main(int argc, char *argv[]) {
             clock_gettime(CLOCK_REALTIME, &start);
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
             onlp.run();
+            /// perform stable partitioning check
+            clock_gettime(CLOCK_REALTIME, &stable_partition_start);
+            StablePartitionNodes stablePartitionNodes(gCopy, onlp.getPartition());
+            stablePartitionNodes.setVectorized(true);
+            stablePartitionNodes.run();
             if (k>=SKIP_RUN) {
                 //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
                 clock_gettime(CLOCK_REALTIME, &end);
@@ -700,6 +719,8 @@ int main(int argc, char *argv[]) {
                 long seconds = end.tv_sec - start.tv_sec;
                 long nanoseconds = end.tv_nsec - start.tv_nsec;
                 double elapsed = seconds + nanoseconds*1e-9;
+                double stable_partitioning_time = (end.tv_sec - stable_partition_start.tv_sec) +
+                                              (end.tv_nsec - stable_partition_start.tv_nsec)*1e-9;
                 seconds = cpu_end.tv_sec - cpu_start.tv_sec;
                 nanoseconds = cpu_end.tv_nsec - cpu_start.tv_nsec;
                 double cpu_elapsed = seconds + nanoseconds*1e-9;
@@ -723,7 +744,7 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << 0 << "," << run_time << ","
                           << 0 << "," << 0 << "," << ppn << "," << "LL"
-                          << "," << 0 << "," << 0 << std::endl;
+                          << "," << 0 << "," << 0 << "," << stable_partitioning_time << std::endl;
 #endif
                 et_mplm += cpu_elapsed;
                 mplm_subsets += comm;
