@@ -105,8 +105,8 @@ void ONLP::run() {
             < maxIterations)) { // as long as a label has changed... or maximum iterations reached
         runtime.start();
         nIterations += 1;
-        DEBUG("[BEGIN] LabelPropagation: iteration #", nIterations);
-        std::cout<<"[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
+//        DEBUG("[BEGIN] LabelPropagation: iteration #", nIterations);
+//        std::cout<<"[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         //        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
@@ -134,7 +134,7 @@ void ONLP::run() {
 #pragma unroll
                     for (e = 0; (e + 16) <= _deg; e += 16) {
                         __m512i w_vec = _mm512_loadu_si512((__m512i *)&pnt_outEdges[e]);
-//                        _mm512_prefetch_i32gather_ps(w_vec, &data[0], sizeof(node), _MM_HINT_T0);
+//                        _mm512_prefetch_i32gather_ps(w_vec, &data[0], 4, _MM_HINT_T0);
                         __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
 //                        _mm512_prefetch_i32gather_ps(lw_vec, &pnt_labelWeights[0], 4, _MM_HINT_T0);
                         __m512 labelWeight_vec =
@@ -294,13 +294,13 @@ void ONLP::run() {
             }
         }
 
-        std::cout<< "done label propagation" << std::endl;
+//        std::cout<< "done label propagation" << std::endl;
         // for each while loop iteration...
 
         runtime.stop();
         this->timing.push_back(runtime.elapsedMilliseconds());
-        DEBUG("[DONE] LabelPropagation: iteration #", nIterations, " - updated ", nUpdated,
-              " labels, time spent: ", runtime.elapsedTag());
+//        DEBUG("[DONE] LabelPropagation: iteration #", nIterations, " - updated ", nUpdated,
+//              " labels, time spent: ", runtime.elapsedTag());
         //        std::cout<< "[DONE] LabelPropagation: iteration #" << nIterations  << " - updated
         //        "<< nUpdated << " labels, time spent: " << runtime.elapsedTag() << std::endl;
 
