@@ -8,6 +8,7 @@
 #SBATCH --ntasks=1                   # Run a single task
 #SBATCH --ntasks-per-node=1       # maximum task per node	
 #SBATCH --cpus-per-task=48	# Number of CPU cores per task
+#SBATCH --constraint=caslake    # for Skylake:skylake, for cascade lake: caslake
 #SBATCH --mem=300gb                  # Total memory limit
 #SBATCH --time=30:00:00              # Time limit hrs:min:sec
 #SBATCH --output=cascade_%j.log     # Standard output and error log
@@ -16,7 +17,7 @@
 #module purge > /dev/null 2>&1
 #date;hostname;pwd
 
-#module load intel
+module load intel
 #module load gcc/8.2.0
 
 #ulimit -s 10240
@@ -26,13 +27,16 @@ arch=2
 it=25
 
 echo "Path: "$1" threads: "$2" io Method: "$3
-for v in 5 6
+for scale in 20 #21 22 23 24
 do
+    for v in 6 #0 1 2 3 4 5 6
+    do
 #	perf stat -B -e cycles:uk,cache-misses:uk,branches:uk,branch-misses:uk,cpu-clock:uk,alignment-faults:uk,cs:uk,L1-dcache-load-misses:uk,L1-dcache-store-misses:uk 
-	./networkit_tests $1 $2 $v $3 $it $vecType $arch
+	./networkit_tests $1 $2 $v $3 $it $vecType $arch $scale
 	
 # coloring
 #	./TmpNetworKit-Tests-Opt $1 $2 $v $3 $arch #> /dev/null
 	sleep 10
+    done
 done
 
