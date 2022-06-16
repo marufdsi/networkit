@@ -725,6 +725,7 @@ int main(int argc, char *argv[]) {
             clock_gettime(CLOCK_REALTIME, &start);
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
             onlp.run();
+            std::cout<< "ONLP done" << std::endl;
             /// perform stable partitioning check
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
             StablePartitionNodes stablePartitionNodes(G, onlp.getPartition(), onlp.getPartition());
