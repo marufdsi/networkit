@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
 
     RmatGenerator rmat(scale, edgeFactor, a, b, c, d);
     Graph G = rmat.generate();
-    _graphName = "RMAT_" + to_string(scale) + "_" + to_string(edgeFactor) + "-57-19-19-05";
+    _graphName = "RMAT_" + std::to_string(scale) + "_" + std::to_string(edgeFactor) + "-57-19-19-05";
 #else
     /// Initialize reader
     SNAPGraphReader snapReader;
