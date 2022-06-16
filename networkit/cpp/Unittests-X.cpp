@@ -212,7 +212,7 @@ int main(int argc, char *argv[]) {
     Modularity modularity;
     std::string _graphName, dirName;
 #if RMAT_GRAPH
-    count scale = 20;
+    count scale = 19;
     count edgeFactor = 16;
     double a = 0.57;
     double b = 0.19;
