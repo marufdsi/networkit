@@ -85,9 +85,14 @@ void ONLP::run() {
     bool hasEdgeId = G->hasEdgeIds();
     outEdgeWeights = G->getOutEdgeWeights();
     outEdges = G->getOutEdges();
+    index max_sub = 0, min_sub = z;
     for (index i = 0; i < z; ++i) {
         outDegree.push_back(outEdges[i].size());
         data[i] = i;
+        if (data[i] > max_sub)
+            max_sub = data[i];
+        if (data[i] < min_sub)
+            min_sub = data[i];
     }
 
     std::vector<std::vector<f_weight>> labelWeights(omp_get_max_threads(),
