@@ -110,7 +110,7 @@ void ONLP::run() {
         //        std::cout<< "[BEGIN] LabelPropagation: iteration #" << nIterations << std::endl;
         // reset updated
         nUpdated = 0;
-        if(nIterations <= 1) {
+        if(nIterations <= 0) {
 #pragma omp parallel for schedule(guided)
             for (omp_index v = 0; v < static_cast<omp_index>(z); ++v) {
                 if (G->hasNode(v) && (activeNodes[v] == 1) && (G->degree(v) > 0)) {
