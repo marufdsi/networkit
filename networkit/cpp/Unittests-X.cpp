@@ -767,7 +767,7 @@ int main(int argc, char *argv[]) {
                 }
 
 #if OVERALL_LOG
-                graph_log << _graphName << "," << "PF_ONLP" << "," << z << "," << edges << ","
+                graph_log << _graphName << "," << "ONLP" << "," << z << "," << edges << ","
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << 0 << "," << run_time << ","
                           << 0 << "," << 0 << "," << ppn << "," << "LL"
