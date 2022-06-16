@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
     if (argc > argi) {
         scale = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
-//    std::cout<<"Architecture:" << architecture << std::endl;
+    std::cout<<"scale:" << scale << std::endl;
     bool refine = false;
     if (argc > argi) {
         refine = std::stoi(argv[argi++]);
@@ -665,14 +665,16 @@ int main(int argc, char *argv[]) {
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_start);
             mplp.run();
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
-            StablePartitionNodes stablePartitionNodes(G, mplp.getPartition(), mplp.getPartition());
-            stablePartitionNodes.run();
+//            StablePartitionNodes stablePartitionNodes(G, mplp.getPartition(), mplp.getPartition());
+//            stablePartitionNodes.run();
             if (k>=SKIP_RUN) {
                 //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
                 clock_gettime(CLOCK_REALTIME, &end);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_end);
-                long seconds = end.tv_sec - start.tv_sec;
-                long nanoseconds = end.tv_nsec - start.tv_nsec;
+//                long seconds = end.tv_sec - start.tv_sec;
+//                long nanoseconds = end.tv_nsec - start.tv_nsec;
+                long seconds = stable_partition_start.tv_sec - start.tv_sec;
+                long nanoseconds = stable_partition_start.tv_nsec - start.tv_nsec;
                 double elapsed = seconds + nanoseconds*1e-9;
                 double stable_partitioning_time = (end.tv_sec - stable_partition_start.tv_sec) +
                                               (end.tv_nsec - stable_partition_start.tv_nsec)*1e-9;
@@ -732,9 +734,9 @@ int main(int argc, char *argv[]) {
             std::cout<< "ONLP done" << std::endl;
             /// perform stable partitioning check
             clock_gettime(CLOCK_REALTIME, &stable_partition_start);
-            StablePartitionNodes stablePartitionNodes(G, onlp.getPartition(), onlp.getPartition());
-            stablePartitionNodes.setVectorized(true);
-            stablePartitionNodes.run();
+//            StablePartitionNodes stablePartitionNodes(G, onlp.getPartition(), onlp.getPartition());
+//            stablePartitionNodes.setVectorized(true);
+//            stablePartitionNodes.run();
             if (k>=SKIP_RUN) {
                 //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
                 clock_gettime(CLOCK_REALTIME, &end);
