@@ -164,7 +164,7 @@ void ONLP::run() {
                         /// Add edge weight to the label weight and if mask doesn't set load from affinity
                         labelWeight_vec = _mm512_mask_add_ps(labelWeight_vec, mask, labelWeight_vec,
                                                              default_edge_weight);
-                        _mm512_mask_prefetch_i32scatter_ps((&pnt_labelWeights[0], mask, lw_vec, sizeof(f_weight), _MM_HINT_T0);
+                        _mm512_mask_prefetch_i32scatter_ps(&pnt_labelWeights[0], mask, lw_vec, sizeof(f_weight), _MM_HINT_T0);
                         /// Scatter label weight value to the label weight pointer.
                         _mm512_mask_i32scatter_ps(&pnt_labelWeights[0], mask, lw_vec,
                                                   labelWeight_vec, 4);
@@ -229,7 +229,7 @@ void ONLP::run() {
                                                                  /// Scatter label weight value to the label weight pointer.
                                                                  _mm512_i32scatter_epi32(&activeNodes[0], u_vec, set_plus_1, 4);
                                                              }*/
-#pragma omp simd
+//#pragma omp simd
                         for (int i = 0; i < _deg; ++i) {
                             node u = pnt_outEdges[i];
                             activeNodes[u] = 1;
