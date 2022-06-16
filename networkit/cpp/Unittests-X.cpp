@@ -75,7 +75,7 @@
 #endif
 
 #ifndef RMAT_GRAPH
-#define RMAT_GRAPH true
+#define RMAT_GRAPH false
 #endif
 
 //#ifndef L1D_CACHE_MISS_COUNT
