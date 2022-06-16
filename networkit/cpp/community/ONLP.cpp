@@ -134,7 +134,8 @@ void ONLP::run() {
 #pragma unroll
                     for (e = 0; (e + 16) <= _deg; e += 16) {
                         __m512i w_vec = _mm512_loadu_si512((__m512i *)&pnt_outEdges[e]);
-                        _mm512_prefetch_i32gather_ps(w_vec, &data[0], 4, _MM_HINT_T0);
+                        /// Skylake and cascade does not support prefetch
+//                        _mm512_prefetch_i32gather_ps(w_vec, &data[0], 4, _MM_HINT_T0);
                         __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
 //                        _mm512_prefetch_i32gather_ps(lw_vec, &pnt_labelWeights[0], 4, _MM_HINT_T0);
                         __m512 labelWeight_vec =
