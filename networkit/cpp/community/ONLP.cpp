@@ -229,7 +229,7 @@ void ONLP::run() {
                                                                  /// Scatter label weight value to the label weight pointer.
                                                                  _mm512_i32scatter_epi32(&activeNodes[0], u_vec, set_plus_1, 4);
                                                              }*/
-//#pragma omp simd
+#pragma omp simd
                         for (int i = 0; i < _deg; ++i) {
                             node u = pnt_outEdges[i];
                             activeNodes[u] = 1;
