@@ -734,8 +734,10 @@ int main(int argc, char *argv[]) {
                 //                clock_gettime(CLOCK_MONOTONIC, &end_modified);
                 clock_gettime(CLOCK_REALTIME, &end);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_end);
-                long seconds = end.tv_sec - start.tv_sec;
-                long nanoseconds = end.tv_nsec - start.tv_nsec;
+//                long seconds = end.tv_sec - start.tv_sec;
+//                long nanoseconds = end.tv_nsec - start.tv_nsec;
+                long seconds = stable_partition_start.tv_sec - start.tv_sec;
+                long nanoseconds = stable_partition_start.tv_nsec - start.tv_nsec;
                 double elapsed = seconds + nanoseconds*1e-9;
                 double stable_partitioning_time = (end.tv_sec - stable_partition_start.tv_sec) +
                                               (end.tv_nsec - stable_partition_start.tv_nsec)*1e-9;
