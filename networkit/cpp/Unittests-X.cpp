@@ -197,6 +197,10 @@ int main(int argc, char *argv[]) {
     if (argc > argi) {
         architecture = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
+    count scale = 20;
+    if (argc > argi) {
+        scale = (int)std::strtol(argv[argi++], (char**)NULL, 10);
+    }
 //    std::cout<<"Architecture:" << architecture << std::endl;
     bool refine = false;
     if (argc > argi) {
@@ -212,7 +216,6 @@ int main(int argc, char *argv[]) {
     Modularity modularity;
     std::string _graphName, dirName;
 #if RMAT_GRAPH
-    count scale = 19;
     count edgeFactor = 16;
     double a = 0.57;
     double b = 0.19;
