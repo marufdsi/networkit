@@ -20,7 +20,7 @@
 #include <networkit/auxiliary/Log.hpp>
 #include <networkit/auxiliary/Parallelism.hpp>
 #include <networkit/auxiliary/PowerCalculator.hpp>
-
+#include <networkit/generators/RmatGenerator.hpp>
 #include <networkit/community/PLP.hpp>
 #include <networkit/community/MPLP.hpp>
 #include <networkit/community/ONLP.hpp>
