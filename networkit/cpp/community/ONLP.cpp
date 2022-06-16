@@ -85,14 +85,9 @@ void ONLP::run() {
     bool hasEdgeId = G->hasEdgeIds();
     outEdgeWeights = G->getOutEdgeWeights();
     outEdges = G->getOutEdges();
-    index max_sub = 0, min_sub = z;
     for (index i = 0; i < z; ++i) {
         outDegree.push_back(outEdges[i].size());
         data[i] = i;
-        if (data[i] > max_sub)
-            max_sub = data[i];
-        if (data[i] < min_sub)
-            min_sub = data[i];
     }
 
     std::vector<std::vector<f_weight>> labelWeights(omp_get_max_threads(),
@@ -140,7 +135,7 @@ void ONLP::run() {
                         __m512i w_vec = _mm512_loadu_si512((__m512i *)&pnt_outEdges[e]);
                         _mm512_prefetch_i32gather_ps(w_vec, &data[0], sizeof(node), _MM_HINT_T0);
                         __m512i lw_vec = _mm512_i32gather_epi32(w_vec, &data[0], 4);
-//                        _mm512_prefetch_i32gather_ps(lw_vec, &pnt_labelWeights[0], sizeof(node), _MM_HINT_T0);
+                        _mm512_prefetch_i32gather_ps(lw_vec, &pnt_labelWeights[0], sizeof(node), _MM_HINT_T0);
                         __m512 labelWeight_vec =
                             _mm512_i32gather_ps(lw_vec, &pnt_labelWeights[0], 4);
                         /// label weight = -1 that means labels that come first time
@@ -169,7 +164,7 @@ void ONLP::run() {
                         /// Add edge weight to the label weight and if mask doesn't set load from affinity
                         labelWeight_vec = _mm512_mask_add_ps(labelWeight_vec, mask, labelWeight_vec,
                                                              default_edge_weight);
-//                        _mm512_mask_prefetch_i32scatter_ps(&pnt_labelWeights[0], mask, lw_vec, sizeof(f_weight), _MM_HINT_T0);
+                        _mm512_mask_prefetch_i32scatter_ps(&pnt_labelWeights[0], mask, lw_vec, sizeof(f_weight), _MM_HINT_T0);
                         /// Scatter label weight value to the label weight pointer.
                         _mm512_mask_i32scatter_ps(&pnt_labelWeights[0], mask, lw_vec,
                                                   labelWeight_vec, 4);
