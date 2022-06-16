@@ -74,6 +74,10 @@
 #define OVERALL_LOG true
 #endif
 
+#ifndef RMAT_GRAPH
+#define RMAT_GRAPH true
+#endif
+
 //#ifndef L1D_CACHE_MISS_COUNT
 //#define L1D_CACHE_MISS_COUNT
 //#endif
@@ -205,11 +209,23 @@ int main(int argc, char *argv[]) {
     }
 //    std::cout<<"cache_size:" << cache_size << std::endl;
 
+    Modularity modularity;
+    std::string _graphName, dirName;
+#if RMAT_GRAPH
+    count scale = 20;
+    count edgeFactor = 16;
+    double a = 0.57;
+    double b = 0.19;
+    double c = 0.19;
+    double d = 0.05;
+
+    RmatGenerator rmat(scale, edgeFactor, a, b, c, d);
+    Graph G = rmat.generate();
+    _graphName = "RMAT_" + to_string(scale) + "_" + to_string(edgeFactor) + "-57-19-19-05";
+#else
     /// Initialize reader
     SNAPGraphReader snapReader;
     METISGraphReader metisReader;
-    Modularity modularity;
-    std::string _graphName, dirName;
     std::vector<std::string>tokens = Aux::StringTools::split(path, '/');
     _graphName = Aux::StringTools::split(tokens[tokens.size()-1], '.')[0];
     Graph G;
@@ -217,10 +233,12 @@ int main(int argc, char *argv[]) {
         G = snapReader.read(path);
     else
         G = metisReader.read(path);
+#endif
+
 
 #if OVERALL_LOG
     std::ofstream graph_log;
-    std::string conference = "Vec_Results/";
+    std::string conference = "Journal_Results/";
     std::string folderName = conference + (version >=4 ? "LP/" : "LM/");
     if (mkdir(folderName.c_str(), 0777) == -1)
         std::cout<<"Directory " << folderName << " is already exist" << std::endl;
