@@ -713,6 +713,7 @@ int main(int argc, char *argv[]) {
     }
     else if(version == 6) {
         std::cout << "***** One Neighbor PLP *****" << std::endl;
+        std::cout<<"Nodes: " << G.upperNodeIdBound() << " Edges: " << G.numberOfEdges() << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
             ONLP onlp(gCopy, (count)std::numeric_limits<uint64_t>::max(), _iterations);
