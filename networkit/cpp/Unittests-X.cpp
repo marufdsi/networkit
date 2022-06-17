@@ -201,7 +201,28 @@ int main(int argc, char *argv[]) {
     if (argc > argi) {
         scale = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
-    std::cout<<"scale:" << scale << std::endl;
+    count edgeFactor = 16;
+    if (argc > argi) {
+        edgeFactor = (int)std::strtol(argv[argi++], (char**)NULL, 10);
+    }
+    double a = 0.57;
+    if (argc > argi) {
+        a = (double)std::strtod(argv[argi++], (char**)NULL, 10);
+    }
+    double b = 0.19;
+    if (argc > argi) {
+        b = (double)std::strtod(argv[argi++], (char**)NULL, 10);
+    }
+    double c = 0.19;
+    if (argc > argi) {
+        c = (double)std::strtod(argv[argi++], (char**)NULL, 10);
+    }
+    double d = 0.05;
+    if (argc > argi) {
+        d = (double)std::strtod(argv[argi++], (char**)NULL, 10);
+    }
+    std::cout<<"scale:" << scale << " edgeFactor: " << edgeFactor << " a: " << a << " b: " << b
+              << " c: " << c << " d: " << d << std::endl;
     bool refine = false;
     if (argc > argi) {
         refine = std::stoi(argv[argi++]);
@@ -216,12 +237,6 @@ int main(int argc, char *argv[]) {
     Modularity modularity;
     std::string _graphName, dirName;
 #if RMAT_GRAPH
-    count edgeFactor = 16;
-    double a = 0.57;
-    double b = 0.19;
-    double c = 0.19;
-    double d = 0.05;
-
     RmatGenerator rmat(scale, edgeFactor, a, b, c, d);
     Graph G = rmat.generate();
     _graphName = "RMAT_" + std::to_string(scale) + "_" + std::to_string(edgeFactor) + "-57-19-19-05";
@@ -269,7 +284,7 @@ int main(int argc, char *argv[]) {
     double et_plm=0, et_mplm=0.0, et_onpl=0, et_ovpl=0, plm_mod=0, onpl_mod=0, ovpl_mod=0, mplm_mod=0;
     count plm_subsets=0, onpl_subsets=0, ovpl_subsets=0, mplm_subsets=0;
 
-    if (version == 0) {
+    auto Parallel_LM = [&](){
         std::cout << "***** Legacy Version *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -333,8 +348,8 @@ int main(int argc, char *argv[]) {
         std::cout << "number of clusters: " << plm_subsets << std::endl;
         std::cout << "modularity: " << plm_mod << std::endl;
 
-    }
-    else if (version == 1) {
+    };
+    auto OneNeighborPerLane_LM = [&](){
         std::cout << "***** Vectorized Row Version *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -421,8 +436,8 @@ int main(int argc, char *argv[]) {
         std::cout << "number of clusters: " << onpl_subsets << std::endl;
         std::cout << "modularity: " << onpl_mod << std::endl;
 
-    }
-    else if (version == 2) {
+    };
+    auto OneVertexPerLane_LM = [&](){
         std::cout << "***** Vectorized Block Version *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -508,8 +523,8 @@ int main(int argc, char *argv[]) {
         std::cout << "number of clusters: " << ovpl_subsets << std::endl;
         std::cout << "modularity: " << ovpl_mod << std::endl;
 
-    }
-    else if(version == 3) {
+    };
+    auto Modified_PLM = [&](){
         std::cout << "***** Modified Legacy Version *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -590,8 +605,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
         std::cout << "number of clusters: " << mplm_subsets << std::endl;
         std::cout << "modularity: " << mplm_mod << std::endl;
-    }
-    else if(version == 4) {
+    };
+    auto Parallel_LP = [&](){
         std::cout << "***** Legacy PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -649,8 +664,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
         std::cout << "number of clusters: " << mplm_subsets << std::endl;
         std::cout << "modularity: " << mplm_mod << std::endl;
-    }
-    else if(version == 5) {
+    };
+    auto Modified_PLP = [&](){
         std::cout << "***** Modified PLP *****" << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
             Graph gCopy = G;
@@ -715,8 +730,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
         std::cout << "number of clusters: " << mplm_subsets << std::endl;
         std::cout << "modularity: " << mplm_mod << std::endl;
-    }
-    else if(version == 6) {
+    };
+    auto OneNeighborPerLane_LP = [&](){
         std::cout << "***** One Neighbor PLP *****" << std::endl;
         std::cout<<"Nodes: " << G.upperNodeIdBound() << " Edges: " << G.numberOfEdges() << std::endl;
         for (int k = 0; k < NUM_RUN+SKIP_RUN; ++k) {
@@ -785,7 +800,14 @@ int main(int argc, char *argv[]) {
         std::cout << "Total CPU time without refinement: " << et_mplm << std::endl;
         std::cout << "number of clusters: " << mplm_subsets << std::endl;
         std::cout << "modularity: " << mplm_mod << std::endl;
-    }
+    };
+    Parallel_LM();
+    OneNeighborPerLane_LM();
+    OneVertexPerLane_LM();
+    Modified_PLM();
+    Parallel_LP();
+    Modified_PLP();
+    OneNeighborPerLane_LP();
 
 #if OVERALL_LOG
     graph_log.close();
