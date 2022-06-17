@@ -207,19 +207,19 @@ int main(int argc, char *argv[]) {
     }
     double a = 0.57;
     if (argc > argi) {
-        a = (double)std::strtod(argv[argi++], (char**)NULL, 10);
+        a = (double)std::strtod(argv[argi++]);
     }
     double b = 0.19;
     if (argc > argi) {
-        b = (double)std::strtod(argv[argi++], (char**)NULL, 10);
+        b = (double)std::strtod(argv[argi++]);
     }
     double c = 0.19;
     if (argc > argi) {
-        c = (double)std::strtod(argv[argi++], (char**)NULL, 10);
+        c = (double)std::strtod(argv[argi++]);
     }
     double d = 0.05;
     if (argc > argi) {
-        d = (double)std::strtod(argv[argi++], (char**)NULL, 10);
+        d = (double)std::strtod(argv[argi++]);
     }
     std::cout<<"scale:" << scale << " edgeFactor: " << edgeFactor << " a: " << a << " b: " << b
               << " c: " << c << " d: " << d << std::endl;
