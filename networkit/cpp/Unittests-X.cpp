@@ -205,21 +205,22 @@ int main(int argc, char *argv[]) {
     if (argc > argi) {
         edgeFactor = (int)std::strtol(argv[argi++], (char**)NULL, 10);
     }
+    char *d_end;
     double a = 0.57;
     if (argc > argi) {
-        a = (double)std::strtod(argv[argi++]);
+        a = (double)std::strtod(argv[argi++], &d_end);
     }
     double b = 0.19;
     if (argc > argi) {
-        b = (double)std::strtod(argv[argi++]);
+        b = (double)std::strtod(argv[argi++], &d_end);
     }
     double c = 0.19;
     if (argc > argi) {
-        c = (double)std::strtod(argv[argi++]);
+        c = (double)std::strtod(argv[argi++], &d_end);
     }
     double d = 0.05;
     if (argc > argi) {
-        d = (double)std::strtod(argv[argi++]);
+        d = (double)std::strtod(argv[argi++], &d_end);
     }
     std::cout<<"scale:" << scale << " edgeFactor: " << edgeFactor << " a: " << a << " b: " << b
               << " c: " << c << " d: " << d << std::endl;
