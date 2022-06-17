@@ -281,8 +281,8 @@ int main(int argc, char *argv[]) {
                   << "," << "MaxIterations" << "," << "FirstMoveTime" << "," << "MoveTime" << ","
                   << "CoarsenTime" << "," << "RefineTime" << "," << "Threads" << "," << "CacheLevel"
                   << "," << "CacheMissCount" << "," << "Refine" << "," << "StablePartitioningTime"
-                  << "," << "Scale" << "," << "EdgeFactor" << "," << "a" << "," << b << "," << c
-                  << "," << d << std::endl;
+                  << "," << "Scale" << "," << "EdgeFactor" << "," << "a" << "," << "b" << "," << "c"
+                  << "," << "d" << std::endl;
     }
     infile.close();
 #endif
