@@ -26,14 +26,10 @@ arch=1
 it=25
 
 echo "Path: "$1" threads: "$2" io Method: "$3
-for scale in 20 21 22 23 24
+for v in 6 #0 1 2 3 4 5 6
 do
-    for v in 6 #1 2 3 4 5 6
-    do
-	./networkit_tests $1 $2 $v $3 $it $vecType $arch $scale
-#coloring
-#        ./TmpNetworKit-Tests-Opt $1 $2 $v $3 $arch
-	sleep 10
-    done
+#	perf stat -B -e cycles:uk,cache-misses:uk,branches:uk,branch-misses:uk,cpu-clock:uk,alignment-faults:uk,cs:uk,L1-dcache-load-misses:uk,L1-dcache-store-misses:uk
+	./networkit_tests $1 $2 $v $3 $it $vecType $arch $4 $5 $6 $7 $8 $9
+  sleep 10
 done
 
