@@ -240,7 +240,9 @@ int main(int argc, char *argv[]) {
 #if RMAT_GRAPH
     RmatGenerator rmat(scale, edgeFactor, a, b, c, d);
     Graph G = rmat.generate();
-    _graphName = "RMAT_" + std::to_string(scale) + "_" + std::to_string(edgeFactor) + "-57-19-19-05";
+    _graphName = "RMAT_" + std::to_string(scale) + "_" + std::to_string(edgeFactor) + "-" +
+                 std::to_string(a)  + "-" + std::to_string(b)  + "-" + std::to_string(c)  + "-"
+                 + std::to_string(d);
 #else
     /// Initialize reader
     SNAPGraphReader snapReader;
@@ -258,12 +260,12 @@ int main(int argc, char *argv[]) {
 #if OVERALL_LOG
     std::ofstream graph_log;
     std::string conference = "Journal_Results/";
-    std::string folderName = conference + (version >=4 ? "LP/" : "LM/") + "RMAT_";
+    std::string folderName = conference + (version >=4 ? "LP/" : "LM/");
     if (mkdir(folderName.c_str(), 0777) == -1)
         std::cout<<"Directory " << folderName << " is already exist" << std::endl;
     else
         std::cout<<"Directory " << folderName << " created" << std::endl;
-    std::string logFileName = folderName + (fullVec ? "Full_Vec_" : "Partial_Vec_") + (architecture == 1 ? "SkyLake" : "CascadeLake") + ".csv";
+    std::string logFileName = folderName + "RMAT_" + (fullVec ? "Full_Vec_" : "Partial_Vec_") + (architecture == 1 ? "SkyLake" : "CascadeLake") + ".csv";
 
     std::ifstream infile(logFileName);
     graph_log.open(logFileName, std::ios_base::out | std::ios_base::app | std::ios_base::ate);

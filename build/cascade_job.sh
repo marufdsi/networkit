@@ -27,19 +27,12 @@ arch=2
 it=25
 
 echo "Path: "$1" threads: "$2" io Method: "$3
-for scale in 17 #18 19 #21 22 23 24 #20
-do
-    for ef in 16 #32 64 128 2 4 8
-    do
+
 	for v in 6 #0 1 2 3 4 5 6
 	do
 #	perf stat -B -e cycles:uk,cache-misses:uk,branches:uk,branch-misses:uk,cpu-clock:uk,alignment-faults:uk,cs:uk,L1-dcache-load-misses:uk,L1-dcache-store-misses:uk 
-	    ./networkit_tests $1 $2 $v $3 $it $vecType $arch $scale $ef 0.57 0.19 0.19 0.05
+	    ./networkit_tests $1 $2 $v $3 $it $vecType $arch $4 $5 $6 $7 $8 $9
 	    sleep 10
-	    ./networkit_tests $1 $2 $v $3 $it $vecType $arch $scale $ef 0.33 0.33 0.33 0.01
-            sleep 10
-	    ./networkit_tests $1 $2 $v $3 $it $vecType $arch $scale $ef 0.40 0.30 0.20 0.10
-            sleep 10
 	done
     done
 done
