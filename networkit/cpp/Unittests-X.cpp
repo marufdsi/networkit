@@ -257,7 +257,7 @@ int main(int argc, char *argv[]) {
 #if OVERALL_LOG
     std::ofstream graph_log;
     std::string conference = "Journal_Results/";
-    std::string folderName = conference + (version >=4 ? "LP/" : "LM/");
+    std::string folderName = conference + (version >=4 ? "LP/" : "LM/") + "RMAT_";
     if (mkdir(folderName.c_str(), 0777) == -1)
         std::cout<<"Directory " << folderName << " is already exist" << std::endl;
     else
@@ -274,7 +274,8 @@ int main(int argc, char *argv[]) {
                   << "," << "MaxIterations" << "," << "FirstMoveTime" << "," << "MoveTime" << ","
                   << "CoarsenTime" << "," << "RefineTime" << "," << "Threads" << "," << "CacheLevel"
                   << "," << "CacheMissCount" << "," << "Refine" << "," << "StablePartitioningTime"
-                  << std::endl;
+                  << "," << "Scale" << "," << "EdgeFactor" << "," << "a" << "," << b << "," << c
+                  << "," << d << std::endl;
     }
     infile.close();
 #endif
@@ -333,7 +334,9 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "L1D"
-                          << "," << 0 << "," << refine << "," << 0 << std::endl;
+                          << "," << 0 << "," << refine << "," << 0 << "," << scale << ","
+                          << edgeFactor << "," << a << "," << b << "," << c << "," << d
+                          << std::endl;
 #endif
                 et_plm += cpu_elapsed;
                 plm_subsets += comm;
@@ -413,14 +416,18 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "L1D"
-                          << "," << cache_count << "," << refine << std::endl;
+                          << "," << cache_count << "," << refine << "," << 0 << "," << scale
+                          << "," << edgeFactor << "," << a << "," << b << "," << c << "," << d
+                          << std::endl;
 #else
 
                 graph_log << _graphName << "," << "ONPL" << "," << z << "," << edges << ","
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"
-                          << "," << cache_count << "," << refine << "," << 0 << std::endl;
+                          << "," << cache_count << "," << refine << "," << 0 << "," << scale
+                          << "," << edgeFactor << "," << a << "," << b << "," << c << "," << d
+                          << std::endl;
 #endif
 #endif
                 et_onpl += cpu_elapsed;
@@ -501,13 +508,17 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "L1D"
-                          << "," << cache_count << "," << refine << std::endl;
+                          << "," << cache_count << "," << refine << "," << 0 << "," << scale << ","
+                          << edgeFactor << "," << a << "," << b << "," << c << "," << d
+                          << std::endl;
 #else
                 graph_log << _graphName << "," << "OVPL" << "," << z << "," << edges << ","
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"
-                          << "," << cache_count << "," << refine << "," << 0 << std::endl;
+                          << "," << cache_count << "," << refine << "," << 0 << "," << scale << ","
+                          << edgeFactor << "," << a << "," << b << "," << c << "," << d
+                          << std::endl;
 #endif
 #endif
                 et_ovpl += cpu_elapsed;
@@ -584,13 +595,17 @@ int main(int argc, char *argv[]) {
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "L1D"
-                          << "," << cache_count << "," << refine << std::endl;
+                          << "," << cache_count << "," << refine << "," << 0 << "," << scale << ","
+                          << edgeFactor << "," << a << "," << b << "," << c << "," << d
+                          << std::endl;
 #else
                 graph_log << _graphName << "," << "MPLM" << "," << z << "," << edges << ","
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"
-                          << "," << cache_count << "," << refine << "," << 0 << std::endl;
+                          << "," << cache_count << "," << refine << "," << 0 << "," << scale << ","
+                          << edgeFactor << "," << a << "," << b << "," << c << "," << d
+                          << std::endl;
 #endif
 #endif
                 et_mplm += cpu_elapsed;
@@ -648,9 +663,10 @@ int main(int argc, char *argv[]) {
 #if OVERALL_LOG
                 graph_log << _graphName << "," << "PLP" << "," << z << "," << edges << ","
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
-                          << (_iterations) << "," << 0 << "," << run_time << ","
-                          << 0 << "," << 0 << "," << ppn << "," << "LL"
-                          << "," << 0 << "," << 0 << "," << 0 << std::endl;
+                          << (_iterations) << "," << 0 << "," << run_time << "," << 0 << "," << 0
+                          << "," << ppn << "," << "LL" << "," << 0 << "," << 0 << "," << 0 << ","
+                          << scale << "," << edgeFactor << "," << a << "," << b << "," << c << ","
+                          << d << std::endl;
 #endif
                 et_mplm += cpu_elapsed;
                 mplm_subsets += comm;
@@ -714,9 +730,10 @@ int main(int argc, char *argv[]) {
 #if OVERALL_LOG
                 graph_log << _graphName << "," << "MPLP" << "," << z << "," << edges << ","
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
-                          << (_iterations) << "," << 0 << "," << run_time << ","
-                          << 0 << "," << 0 << "," << ppn << "," << "LL"
-                          << "," << 0 << "," << 0 << "," << stable_partitioning_time << std::endl;
+                          << (_iterations) << "," << 0 << "," << run_time << "," << 0 << "," << 0
+                          << "," << ppn << "," << "LL" << "," << 0 << "," << 0 << ","
+                          << stable_partitioning_time << "," << scale << "," << edgeFactor << ","
+                          << a << "," << b << "," << c << "," << d << std::endl;
 #endif
                 et_mplm += cpu_elapsed;
                 mplm_subsets += comm;
@@ -784,9 +801,10 @@ int main(int argc, char *argv[]) {
 #if OVERALL_LOG
                 graph_log << _graphName << "," << "ONLP" << "," << z << "," << edges << ","
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
-                          << (_iterations) << "," << 0 << "," << run_time << ","
-                          << 0 << "," << 0 << "," << ppn << "," << "LL"
-                          << "," << 0 << "," << 0 << "," << stable_partitioning_time << std::endl;
+                          << (_iterations) << "," << 0 << "," << run_time << "," << 0 << "," << 0
+                          << "," << ppn << "," << "LL" << "," << 0 << "," << 0 << ","
+                          << stable_partitioning_time << "," << scale << "," << edgeFactor << ","
+                          << a << "," << b << "," << c << "," << d << std::endl;
 #endif
                 et_mplm += cpu_elapsed;
                 mplm_subsets += comm;
