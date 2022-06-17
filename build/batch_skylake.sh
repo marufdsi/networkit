@@ -9,9 +9,9 @@
 #done
 
 
-for scale in 17 #18 19 #21 22 23 24 #20
+for scale in 20 17 18 19 21 22 23 24
 do
-    for ef in 16 #32 64 128 2 4 8
+    for ef in 32 16 64 128 2 4 8
     do
       sbatch skylake_job.sh "RMAT" 36 2 $scale $ef 0.57 0.19 0.19 0.05
       sbatch skylake_job.sh "RMAT" 36 2 $scale $ef 0.33 0.33 0.33 0.01
