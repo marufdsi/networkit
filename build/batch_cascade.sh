@@ -8,7 +8,7 @@
 #	sleep 10
 #done
 
-for scale in 21 #20 17 18 19 21 22 23 24
+for scale in 20 17 18 19 #21 22 23 24
 do
     for ef in 16 32 64 128 2 4 8
     do
