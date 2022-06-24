@@ -209,22 +209,22 @@ int main(int argc, char *argv[]) {
     double a = 0.57;
     if (argc > argi) {
         a = (double)std::strtod(argv[argi++], &d_end);
-        a = round(a*100)/100;
+//        a = round(a*100)/100;
     }
     double b = 0.19;
     if (argc > argi) {
         b = (double)std::strtod(argv[argi++], &d_end);
-        b = round(b*100)/100;
+//        b = round(b*100)/100;
     }
     double c = 0.19;
     if (argc > argi) {
         c = (double)std::strtod(argv[argi++], &d_end);
-        c = round(c*100)/100;
+//        c = round(c*100)/100;
     }
     double d = 0.05;
     if (argc > argi) {
         d = (double)std::strtod(argv[argi++], &d_end);
-        d = round(d*100)/100;
+//        d = round(d*100)/100;
     }
     std::cout<<"scale:" << scale << " edgeFactor: " << edgeFactor << " a: " << a << " b: " << b
               << " c: " << c << " d: " << d << std::endl;
@@ -263,7 +263,7 @@ int main(int argc, char *argv[]) {
 
 #if OVERALL_LOG
     std::ofstream graph_log;
-    std::string conference = "Journal_Results/";
+    std::string conference = "RMAT_Results/";
     std::string folderName = conference; // + (version >=4 ? "LP/" : "LM/");
     if (mkdir(folderName.c_str(), 0777) == -1)
         std::cout<<"Directory " << folderName << " is already exist" << std::endl;
