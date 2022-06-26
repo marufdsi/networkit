@@ -8,13 +8,13 @@
 #	sleep 10
 #done
 
-for scale in 18 19 20 21 22 23 24
+for scale in 17 18 19 20 21 22 23 24
 do
-    for ef in 64 128
+    for ef in 16 32 64 128 8 4 2 1
     do
-      #sbatch cascade_job.sh "RMAT" 48 2 $scale $ef 0.57 0.19 0.19 0.05
+      sbatch cascade_job.sh "RMAT" 48 2 $scale $ef 0.57 0.19 0.19 0.05
       sbatch cascade_job.sh "RMAT" 48 2 $scale $ef 0.33 0.33 0.33 0.01
-      #sbatch cascade_job.sh "RMAT" 48 2 $scale $ef 0.40 0.30 0.20 0.10
+      sbatch cascade_job.sh "RMAT" 48 2 $scale $ef 0.40 0.30 0.20 0.10
     done
 done
 
