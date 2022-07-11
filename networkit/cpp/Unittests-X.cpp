@@ -428,7 +428,7 @@ int main(int argc, char *argv[]) {
                           << std::endl;
 #else
 
-                graph_log << _graphName << "," << "ONPL" << "," << z << "," << edges << ","
+                graph_log << _graphName << "," << "TmpONPL" << "," << z << "," << edges << ","
                           << elapsed << "," << cpu_elapsed << "," << comm << "," << mod << ","
                           << (_iterations) << "," << times["move"][0] << "," << move_time << ","
                           << coarsen_time << "," << refine_time << "," << ppn << "," << "LL"

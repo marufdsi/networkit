@@ -485,7 +485,7 @@ void ONPL::run() {
         f_weight volCommunityMinusNode_C = volCommunity[C] - volN;
         f_weight max_delta = 0;
         /// protect C != D condition
-        const   __m512i reg_C = _mm512_set1_epi32(C);
+        /*const   __m512i reg_C = _mm512_set1_epi32(C);
         const   __m512 affinityC_vec = _mm512_set1_ps(affinityC);
         const   __m512 volCommunityC_vec = _mm512_set1_ps(volCommunityMinusNode_C);
         const   __m512 total_vec = _mm512_set1_ps(total);
@@ -512,7 +512,8 @@ void ONPL::run() {
                 best = _mm512_mask_reduce_min_epi32(gain_mask, D_vec);
             }
 
-        }
+        }*/
+        i = 0;
         for (index j=i; j<neigh_counter; ++j) {
             index D = pnt_neigh_comm[j];
             if (D != C) { // consider only nodes in other clusters (and implicitly only nodes other than u)
@@ -642,7 +643,7 @@ void ONPL::run() {
         f_weight volCommunityMinusNode_C = volCommunity[C] - volN;
         f_weight max_delta = 0;
         /// protect C != D condition
-        const   __m512i reg_C = _mm512_set1_epi32(C);
+        /*const   __m512i reg_C = _mm512_set1_epi32(C);
         const   __m512 affinityC_vec = _mm512_set1_ps(affinityC);
         const   __m512 volCommunityC_vec = _mm512_set1_ps(volCommunityMinusNode_C);
         const   __m512 total_vec = _mm512_set1_ps(total);
@@ -668,8 +669,8 @@ void ONPL::run() {
                 best = _mm512_mask_reduce_min_epi32(gain_mask, D_vec);
             }
 
-        }
-
+        }*/
+        i = 0;
         for (index j=i; j<neigh_counter; ++j) {
             index D = pnt_neigh_comm[j];
             if (D != C) { // consider only nodes in other clusters (and implicitly only nodes other than u)
