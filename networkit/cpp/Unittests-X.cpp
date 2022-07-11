@@ -826,10 +826,10 @@ int main(int argc, char *argv[]) {
         std::cout << "number of clusters: " << mplm_subsets << std::endl;
         std::cout << "modularity: " << mplm_mod << std::endl;
     };
-    Parallel_LM();
-    Modified_PLM();
+//    Parallel_LM();
+//    Modified_PLM();
     OneNeighborPerLane_LM();
-    OneVertexPerLane_LM();
+//    OneVertexPerLane_LM();
 //    Parallel_LP();
 //    Modified_PLP();
 //    OneNeighborPerLane_LP();
